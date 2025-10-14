@@ -12,12 +12,8 @@ import { TopicCard } from "@/components/mobile/topic-card";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, AlertCircle, RefreshCw } from "lucide-react";
-import { BOFStatus } from "@/lib/types";
 import { VotesService } from "@/lib/services/votes.service";
-import { formatDate } from "@/lib/utils/formatters";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
@@ -34,6 +30,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 		participant?.id,
 	);
 	const [isVoting, setIsVoting] = useState(false);
+	const [votingTopicId, setVotingTopicId] = useState<string | null>(null);
 
 	const handleVote = async (topicId: string) => {
 		if (!participant) {
@@ -43,6 +40,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 
 		try {
 			setIsVoting(true);
+			setVotingTopicId(topicId);
 			await VotesService.castVote(participant.id, {
 				topic_id: topicId,
 				bof_session_id: id,
@@ -52,10 +50,11 @@ export default function BOFPage({ params }: BOFPageProps) {
 				userVote ? "Vote changed successfully!" : "Vote cast successfully!",
 			);
 			await refresh();
-		} catch (error: any) {
-			toast.error(error.message || "Failed to vote");
+		} catch (error: unknown) {
+			toast.error((error as Error).message || "Failed to vote");
 		} finally {
 			setIsVoting(false);
+			setVotingTopicId(null);
 		}
 	};
 
@@ -71,8 +70,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 		);
 	}
 
-	const isVotingOpen = bof.status === BOFStatus.VOTING_OPEN;
-	const canCreateTopic = participant && isVotingOpen;
+	const canCreateTopic = participant;
 	const hasCreatedTopic = topics.some((t) => t.author_id === participant?.id);
 
 	return (
@@ -103,71 +101,20 @@ export default function BOFPage({ params }: BOFPageProps) {
 							<RefreshCw className="h-5 w-5" />
 						</Button>
 					</div>
-
-					{/* Status badge */}
-					<div>
-						{bof.status === BOFStatus.VOTING_OPEN && (
-							<Badge className="bg-green-500 hover:bg-green-600">
-								🗳️ Voting Open
-							</Badge>
-						)}
-						{bof.status === BOFStatus.VOTING_CLOSED && (
-							<Badge className="bg-orange-500 hover:bg-orange-600">
-								🔒 Voting Closed
-							</Badge>
-						)}
-						{bof.status === BOFStatus.UPCOMING && (
-							<Badge variant="outline">⏳ Voting Not Started</Badge>
-						)}
-						{bof.status === BOFStatus.COMPLETED && (
-							<Badge variant="secondary">✓ Completed</Badge>
-						)}
-					</div>
 				</div>
 			</div>
 
 			<div className="px-4 space-y-4">
-				{/* Voting info */}
-				{bof.voting_opens_at && bof.voting_closes_at && (
-					<Card className="bg-primary/5 border-primary/20">
-						<CardContent className="p-4">
-							<div className="space-y-1 text-sm">
-								<p>
-									<span className="font-medium">Voting opens:</span>{" "}
-									{formatDate(bof.voting_opens_at, "PPp")}
-								</p>
-								<p>
-									<span className="font-medium">Voting closes:</span>{" "}
-									{formatDate(bof.voting_closes_at, "PPp")}
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-				)}
-
-				{/* Voting closed message */}
-				{!isVotingOpen && (
-					<Alert>
-						<AlertCircle className="h-4 w-4" />
-						<AlertDescription>
-							{bof.status === BOFStatus.UPCOMING &&
-								"Voting hasn't started yet. Check back later!"}
-							{bof.status === BOFStatus.VOTING_CLOSED &&
-								"Voting is now closed. Results are final."}
-							{bof.status === BOFStatus.COMPLETED &&
-								"This session has been completed."}
-						</AlertDescription>
-					</Alert>
-				)}
-
 				{/* Not authenticated message */}
 				{!participant && (
-					<Alert>
-						<AlertCircle className="h-4 w-4" />
-						<AlertDescription>
-							Scan your QR code to vote and create topics
-						</AlertDescription>
-					</Alert>
+					<div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+						<div className="flex items-center gap-2">
+							<AlertCircle className="h-4 w-4 text-orange-600" />
+							<p className="text-sm text-orange-800">
+								Scan your QR code to vote and create topics
+							</p>
+						</div>
+					</div>
 				)}
 
 				{/* Create topic button */}
@@ -220,8 +167,9 @@ export default function BOFPage({ params }: BOFPageProps) {
 									isVoted={userVote?.topic_id === topic.topic_id}
 									onVote={handleVote}
 									isVoting={isVoting}
-									disabled={!isVotingOpen || !participant}
+									disabled={!participant}
 									isOwnTopic={topic.author_id === participant?.id}
+									votingTopicId={votingTopicId}
 								/>
 							))}
 						</div>

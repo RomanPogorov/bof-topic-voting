@@ -7,6 +7,7 @@ import { ROUTES } from "@/lib/constants/routes";
 import {
 	LayoutDashboard,
 	Users,
+	UserPlus,
 	QrCode,
 	Shield,
 	BarChart3,
@@ -23,6 +24,11 @@ const navItems = [
 		label: "Participants",
 		href: ROUTES.ADMIN_PARTICIPANTS,
 		icon: Users,
+	},
+	{
+		label: "Add Participants",
+		href: ROUTES.ADMIN_ADD_PARTICIPANTS,
+		icon: UserPlus,
 	},
 	{
 		label: "QR Codes",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TopicDetails } from "@/lib/types";
+import type { TopicDetails } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,18 +17,20 @@ interface TopicCardProps {
 	isVoting: boolean;
 	disabled?: boolean;
 	isOwnTopic?: boolean;
+	votingTopicId?: string | null;
 }
 
 export function TopicCard({
 	topic,
 	isVoted,
 	onVote,
-	isVoting,
 	disabled,
 	isOwnTopic,
+	votingTopicId,
 }: TopicCardProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
 	const hasDescription = !!topic.description;
+	const isThisTopicVoting = votingTopicId === topic.topic_id;
 
 	const handleVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -101,6 +103,7 @@ export function TopicCard({
 						</p>
 						{topic.description && topic.description.length > 100 && (
 							<button
+								type="button"
 								onClick={() => setIsExpanded(!isExpanded)}
 								className="text-xs text-primary hover:underline mt-1 flex items-center gap-1"
 							>
@@ -132,13 +135,13 @@ export function TopicCard({
 						size="sm"
 						variant={isVoted ? "default" : "outline"}
 						onClick={handleVote}
-						disabled={disabled || isVoting || isOwnTopic}
+						disabled={disabled || isThisTopicVoting || isOwnTopic}
 						className={cn(
 							"min-w-[100px] touch-target",
 							isVoted && "bg-primary hover:bg-primary/90",
 						)}
 					>
-						{isVoting ? (
+						{isThisTopicVoting ? (
 							<Loader2 className="h-4 w-4 animate-spin" />
 						) : isVoted ? (
 							<>

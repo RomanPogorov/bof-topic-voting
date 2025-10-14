@@ -7,9 +7,8 @@ import Link from "next/link";
 import type { BOFSession } from "@/lib/types";
 import { supabase } from "@/lib/supabase/client";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { Calendar, Clock, TrendingUp, Tv } from "lucide-react";
+import { Calendar, Clock, Tv } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
-import { cn } from "@/lib/utils/cn";
 
 export default function TVSelectPage() {
 	const [sessions, setSessions] = useState<BOFSession[]>([]);
@@ -87,29 +86,6 @@ export default function TVSelectPage() {
 									className="group"
 								>
 									<div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20">
-										{/* Status Badge */}
-										<div className="absolute top-6 right-6">
-											<div
-												className={cn(
-													"rounded-full px-4 py-1.5 text-sm font-medium",
-													session.status === "voting_open" &&
-														"bg-green-500/20 text-green-400 ring-2 ring-green-500/50",
-													session.status === "upcoming" &&
-														"bg-yellow-500/20 text-yellow-400",
-													session.status === "voting_closed" &&
-														"bg-orange-500/20 text-orange-400",
-													session.status === "completed" &&
-														"bg-gray-500/20 text-gray-400",
-												)}
-											>
-												{session.status === "voting_open" && "🗳️ Voting Open"}
-												{session.status === "upcoming" && "⏳ Upcoming"}
-												{session.status === "voting_closed" &&
-													"🔒 Voting Closed"}
-												{session.status === "completed" && "✓ Completed"}
-											</div>
-										</div>
-
 										{/* Content */}
 										<div className="mb-4">
 											<div className="mb-2 text-sm text-slate-400">
@@ -135,15 +111,6 @@ export default function TVSelectPage() {
 												<Clock className="h-4 w-4" />
 												<span>{formatDate(session.session_time, "p")}</span>
 											</div>
-											{session.voting_opens_at && session.voting_closes_at && (
-												<div className="flex items-center gap-2">
-													<TrendingUp className="h-4 w-4" />
-													<span className="text-xs">
-														Voting: {formatDate(session.voting_opens_at, "p")} -{" "}
-														{formatDate(session.voting_closes_at, "p")}
-													</span>
-												</div>
-											)}
 										</div>
 
 										{/* Hover Effect */}

@@ -1,5 +1,5 @@
 import { supabase } from "../supabase/client";
-import { Topic, CreateTopicRequest, ErrorCodes, BOFStatus } from "../types";
+import { Topic, CreateTopicRequest, ErrorCodes } from "../types";
 import { AnalyticsService } from "./analytics.service";
 
 export class TopicsService {

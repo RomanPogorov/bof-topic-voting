@@ -94,11 +94,7 @@ export class AuthService {
     const participantId = localStorage.getItem("participant_id");
     if (!participantId) return null;
 
-    const resp = await fetch("/api/auth/me", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ participantId }),
-    });
+    const resp = await fetch(`/api/auth/me?participantId=${participantId}`);
     if (!resp.ok) return null;
     const { participant } = (await resp.json()) as { participant: Participant };
     return participant;

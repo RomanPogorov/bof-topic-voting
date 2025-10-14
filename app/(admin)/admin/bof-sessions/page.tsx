@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, RefreshCw } from "lucide-react";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -23,23 +21,20 @@ interface BOFSessionRow {
 
 export default function AdminBOFSessionsPage() {
 	const [sessions, setSessions] = useState<BOFSessionRow[]>([]);
-	const [loading, setLoading] = useState(true);
 	const { participant } = useAuth();
 
-	async function load() {
-		setLoading(true);
+	const load = async () => {
 		const { data } = await supabase
 			.from("bof_sessions")
 			.select("id, day_number, session_number, title, description")
 			.order("day_number")
 			.order("session_number");
 		setSessions(data || []);
-		setLoading(false);
-	}
+	};
 
 	useEffect(() => {
 		load();
-	}, []);
+	}, [load]);
 
 	async function addSession() {
 		const now = new Date();
@@ -51,8 +46,7 @@ export default function AdminBOFSessionsPage() {
 			session_time: now.toISOString(),
 			voting_opens_at: now.toISOString(),
 			voting_closes_at: new Date(now.getTime() + 60 * 60 * 1000).toISOString(),
-			status: "voting_open",
-		} as any;
+		};
 		const { error } = await supabase.from("bof_sessions").insert(payload);
 		if (error) {
 			toast.error("Failed to add session");
@@ -71,7 +65,7 @@ export default function AdminBOFSessionsPage() {
 						<RefreshCw className="h-4 w-4 mr-2" /> Refresh
 					</Button>
 					<Button onClick={addSession}>
-						<Plus className="h-4 w-4 mr-2" /> New Session (Open)
+						<Plus className="h-4 w-4 mr-2" /> New Session
 					</Button>
 				</div>
 			</div>

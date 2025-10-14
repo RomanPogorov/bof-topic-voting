@@ -1,25 +1,112 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { v4 as uuidv4 } from "uuid";
+
+export async function GET() {
+  try {
+    console.log("Fetching participants...");
+
+    // Fetch participants with stats
+    const { data: participantsData, error: participantsError } =
+      await supabaseAdmin
+        .from("participants")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (participantsError) {
+      console.error("Error fetching participants:", participantsError);
+      throw participantsError;
+    }
+
+    console.log(`Found ${participantsData?.length || 0} participants`);
+
+    // Fetch stats for each participant
+    const participantsWithStats = await Promise.all(
+      (participantsData || []).map(async (participant) => {
+        const [votesRes, topicsRes, achievementsRes] = await Promise.all([
+          supabaseAdmin
+            .from("votes")
+            .select("id", { count: "exact", head: true })
+            .eq("participant_id", participant.id),
+          supabaseAdmin
+            .from("topics")
+            .select("id", { count: "exact", head: true })
+            .eq("participant_id", participant.id),
+          supabaseAdmin
+            .from("participant_achievements")
+            .select("achievement:achievements(points)", { count: "exact" })
+            .eq("participant_id", participant.id),
+        ]);
+
+        const totalPoints =
+          achievementsRes.data?.reduce((sum, pa) => {
+            const achievement = pa.achievement as { points?: number } | null;
+            return sum + (achievement?.points || 0);
+          }, 0) || 0;
+
+        return {
+          ...participant,
+          votes_cast: votesRes.count || 0,
+          topics_created: topicsRes.count || 0,
+          achievements_count: achievementsRes.count || 0,
+          total_points: totalPoints,
+        };
+      })
+    );
+
+    return NextResponse.json(
+      { participants: participantsWithStats },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("Error fetching participants:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to fetch participants" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { name, company, email, auth_token } = body;
+    const { name, email, company } = await request.json();
 
-    const { data, error } = await supabaseAdmin
+    console.log("Creating participant:", { name, email, company });
+
+    if (!name) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    }
+
+    // Генерируем уникальный auth_token для QR кода
+    const authToken = uuidv4();
+    console.log("Generated auth token:", authToken);
+
+    // Создаем участника
+    const { data: participant, error } = await supabaseAdmin
       .from("participants")
-      .insert({ name, company, email, auth_token })
+      .insert({
+        name,
+        email: email || null,
+        company: company || null,
+        auth_token: authToken,
+      })
       .select()
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      console.error("Supabase error creating participant:", error);
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ participant: data }, { status: 200 });
-  } catch (err: any) {
+    console.log("Successfully created participant:", participant);
+    return NextResponse.json({ participant }, { status: 201 });
+  } catch (error: any) {
+    console.error("Error creating participant:", error);
     return NextResponse.json(
-      { error: err.message || "Server error" },
+      { error: error.message || "Failed to create participant" },
       { status: 500 }
     );
   }

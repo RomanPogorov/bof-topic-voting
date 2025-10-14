@@ -11,7 +11,6 @@ import { LeaderboardCard } from "@/components/tv/leaderboard-card";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Calendar, Clock, TrendingUp, Users } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
-import { cn } from "@/lib/utils/cn";
 
 export default function TVDisplayPage() {
 	const params = useParams();
@@ -163,24 +162,6 @@ export default function TVDisplayPage() {
 						<div className="mb-2 flex items-center gap-3">
 							<div className="rounded-full bg-blue-500 px-4 py-1 text-sm font-medium text-white">
 								Day {session.day_number} · Session {session.session_number}
-							</div>
-							<div
-								className={cn(
-									"rounded-full px-4 py-1 text-sm font-medium",
-									session.status === "voting_open" &&
-										"bg-green-500/20 text-green-400",
-									session.status === "upcoming" &&
-										"bg-yellow-500/20 text-yellow-400",
-									session.status === "voting_closed" &&
-										"bg-orange-500/20 text-orange-400",
-									session.status === "completed" &&
-										"bg-gray-500/20 text-gray-400",
-								)}
-							>
-								{session.status === "voting_open" && "🗳️ Voting Open"}
-								{session.status === "upcoming" && "⏳ Upcoming"}
-								{session.status === "voting_closed" && "🔒 Voting Closed"}
-								{session.status === "completed" && "✓ Completed"}
 							</div>
 						</div>
 						<h1 className="text-5xl font-bold text-white mb-3">

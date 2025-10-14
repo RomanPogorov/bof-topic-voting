@@ -18,6 +18,7 @@ export const ROUTES = {
   // Admin
   ADMIN: "/admin",
   ADMIN_PARTICIPANTS: "/admin/participants",
+  ADMIN_ADD_PARTICIPANTS: "/admin/add-participants",
   ADMIN_QR: "/admin/generate-qr",
   ADMIN_SESSIONS: "/admin/bof-sessions",
   ADMIN_MODERATION: "/admin/moderation",

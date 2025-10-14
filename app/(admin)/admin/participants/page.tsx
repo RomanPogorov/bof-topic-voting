@@ -2,14 +2,23 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Participant } from "@/lib/types";
-import { supabase } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { Search, User, Building2, Calendar, Trophy } from "lucide-react";
+import {
+	Search,
+	User,
+	Building2,
+	Calendar,
+	Trophy,
+	QrCode,
+	RefreshCw,
+} from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
+import { QRModal } from "@/components/admin/qr-modal";
 
 interface ParticipantWithStats extends Participant {
 	votes_cast?: number;
@@ -25,11 +34,34 @@ export default function ParticipantsPage() {
 	>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [selectedParticipant, setSelectedParticipant] =
+		useState<ParticipantWithStats | null>(null);
+	const [showQRModal, setShowQRModal] = useState(false);
+
+	const fetchParticipants = useCallback(async () => {
+		try {
+			setIsLoading(true);
+			console.log("Fetching participants from API...");
+
+			const response = await fetch("/api/admin/participants");
+			if (!response.ok) {
+				throw new Error("Failed to fetch participants");
+			}
+
+			const { participants } = await response.json();
+			console.log("Received participants:", participants);
+			setParticipants(participants);
+			setFilteredParticipants(participants);
+		} catch (err) {
+			console.error("Error fetching participants:", err);
+		} finally {
+			setIsLoading(false);
+		}
+	}, []);
 
 	useEffect(() => {
 		fetchParticipants();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [fetchParticipants]);
 
 	useEffect(() => {
 		if (!searchQuery.trim()) {
@@ -47,70 +79,25 @@ export default function ParticipantsPage() {
 		setFilteredParticipants(filtered);
 	}, [searchQuery, participants]);
 
-	async function fetchParticipants() {
-		try {
-			setIsLoading(true);
-
-			// Fetch participants with stats
-			const { data: participantsData, error: participantsError } =
-				await supabase
-					.from("participants")
-					.select("*")
-					.order("created_at", { ascending: false });
-
-			if (participantsError) throw participantsError;
-
-			// Fetch stats for each participant
-			const participantsWithStats = await Promise.all(
-				(participantsData || []).map(async (participant) => {
-					const [votesRes, topicsRes, achievementsRes] = await Promise.all([
-						supabase
-							.from("votes")
-							.select("id", { count: "exact", head: true })
-							.eq("participant_id", participant.id),
-						supabase
-							.from("topics")
-							.select("id", { count: "exact", head: true })
-							.eq("participant_id", participant.id),
-						supabase
-							.from("participant_achievements")
-							.select("achievement:achievements(points)", { count: "exact" })
-							.eq("participant_id", participant.id),
-					]);
-
-					const totalPoints =
-						achievementsRes.data?.reduce((sum, pa) => {
-							const achievement = pa.achievement as { points?: number } | null;
-							return sum + (achievement?.points || 0);
-						}, 0) || 0;
-
-					return {
-						...participant,
-						votes_cast: votesRes.count || 0,
-						topics_created: topicsRes.count || 0,
-						achievements_count: achievementsRes.count || 0,
-						total_points: totalPoints,
-					};
-				}),
-			);
-
-			setParticipants(participantsWithStats);
-			setFilteredParticipants(participantsWithStats);
-		} catch (err) {
-			console.error("Error fetching participants:", err);
-		} finally {
-			setIsLoading(false);
-		}
+	function showQRCode(participant: ParticipantWithStats) {
+		setSelectedParticipant(participant);
+		setShowQRModal(true);
 	}
 
 	return (
 		<div className="space-y-8">
 			{/* Header */}
-			<div>
-				<h1 className="text-4xl font-bold">Participants</h1>
-				<p className="text-muted-foreground mt-2">
-					View and manage registered participants
-				</p>
+			<div className="flex items-center justify-between">
+				<div>
+					<h1 className="text-4xl font-bold">Participants</h1>
+					<p className="text-muted-foreground mt-2">
+						View and manage registered participants
+					</p>
+				</div>
+				<Button onClick={fetchParticipants} variant="outline">
+					<RefreshCw className="h-4 w-4 mr-2" />
+					Refresh
+				</Button>
 			</div>
 
 			{/* Search */}
@@ -210,29 +197,45 @@ export default function ParticipantsPage() {
 										</div>
 									</div>
 
-									{/* Stats */}
-									<div className="flex gap-6 text-center">
-										<div>
-											<div className="text-2xl font-bold">
-												{participant.votes_cast}
+									{/* Actions & Stats */}
+									<div className="flex items-center gap-4">
+										{/* Show QR Button */}
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => showQRCode(participant)}
+											className="flex items-center gap-2"
+										>
+											<QrCode className="h-4 w-4" />
+											Показать QR
+										</Button>
+
+										{/* Stats */}
+										<div className="flex gap-6 text-center">
+											<div>
+												<div className="text-2xl font-bold">
+													{participant.votes_cast}
+												</div>
+												<div className="text-xs text-muted-foreground">
+													Votes
+												</div>
 											</div>
-											<div className="text-xs text-muted-foreground">Votes</div>
-										</div>
-										<div>
-											<div className="text-2xl font-bold">
-												{participant.topics_created}
+											<div>
+												<div className="text-2xl font-bold">
+													{participant.topics_created}
+												</div>
+												<div className="text-xs text-muted-foreground">
+													Topics
+												</div>
 											</div>
-											<div className="text-xs text-muted-foreground">
-												Topics
-											</div>
-										</div>
-										<div>
-											<div className="text-2xl font-bold text-yellow-600">
-												{participant.total_points}
-											</div>
-											<div className="text-xs text-muted-foreground flex items-center gap-1">
-												<Trophy className="h-3 w-3" />
-												Points
+											<div>
+												<div className="text-2xl font-bold text-yellow-600">
+													{participant.total_points}
+												</div>
+												<div className="text-xs text-muted-foreground flex items-center gap-1">
+													<Trophy className="h-3 w-3" />
+													Points
+												</div>
 											</div>
 										</div>
 									</div>
@@ -241,6 +244,23 @@ export default function ParticipantsPage() {
 						</Card>
 					))}
 				</div>
+			)}
+
+			{/* QR Modal */}
+			{selectedParticipant && (
+				<QRModal
+					isOpen={showQRModal}
+					onClose={() => {
+						setShowQRModal(false);
+						setSelectedParticipant(null);
+					}}
+					participant={{
+						id: selectedParticipant.id,
+						name: selectedParticipant.name,
+						email: selectedParticipant.email,
+						auth_token: selectedParticipant.auth_token,
+					}}
+				/>
 			)}
 		</div>
 	);

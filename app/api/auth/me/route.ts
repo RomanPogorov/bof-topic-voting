@@ -1,6 +1,36 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const participantId = url.searchParams.get("participantId");
+
+  if (!participantId) {
+    return NextResponse.json(
+      { error: "Missing participantId" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("participants")
+      .select("*")
+      .eq("id", participantId)
+      .single();
+
+    if (error || !data)
+      return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
+
+    return NextResponse.json({ participant: data }, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message || "SERVER_ERROR" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const { participantId } = await request.json();
