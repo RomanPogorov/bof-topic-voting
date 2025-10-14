@@ -38,7 +38,12 @@ export default function GenerateQRPage() {
 			// 2) Create participant in Supabase with this token
 			const { error: insertError } = await supabase
 				.from("participants")
-				.insert({ name, company: company || null, email: null, auth_token: token });
+				.insert({
+					name,
+					company: company || null,
+					email: `${token}@qr.local`,
+					auth_token: token,
+				});
 			if (insertError) {
 				throw insertError;
 			}
