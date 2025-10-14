@@ -2,24 +2,25 @@ import QRCode from "qrcode";
 import { supabase } from "../supabase/client";
 import { Participant, ErrorCodes } from "../types";
 
-export class QRService {
-  /**
-   * Generate unique auth token
-   */
-  private static generateAuthToken(): string {
-    // Generate random hex string client-safe
-    const array = new Uint8Array(32);
-    if (typeof window !== "undefined") {
-      window.crypto.getRandomValues(array);
-    } else {
-      // Node.js environment
-      const crypto = require("crypto");
-      crypto.randomFillSync(array);
-    }
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-      ""
-    );
+/**
+ * Generate unique auth token
+ */
+export function generateAuthToken(): string {
+  // Generate random hex string client-safe
+  const array = new Uint8Array(32);
+  if (typeof window !== "undefined") {
+    window.crypto.getRandomValues(array);
+  } else {
+    // Node.js environment
+    const crypto = require("crypto");
+    crypto.randomFillSync(array);
   }
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+    ""
+  );
+}
+
+export class QRService {
 
   /**
    * Generate QR code as data URL
@@ -45,7 +46,7 @@ export class QRService {
     company?: string;
   }): Promise<{ participant: Participant; qrDataUrl: string }> {
     // Generate unique token
-    const authToken = this.generateAuthToken();
+    const authToken = generateAuthToken();
 
     // Create participant
     const { data: participant, error } = await supabase
