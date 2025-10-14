@@ -33,7 +33,11 @@ export default function AuthPage({ params }: AuthPageProps) {
 
 				// Redirect to home after 1 second
 				setTimeout(() => {
-					router.push(ROUTES.HOME);
+					if (typeof window !== "undefined") {
+						window.location.replace(ROUTES.HOME);
+					} else {
+						router.push(ROUTES.HOME);
+					}
 				}, 1000);
 			} catch (err: any) {
 				setStatus("error");
