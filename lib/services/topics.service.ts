@@ -36,41 +36,45 @@ export class TopicsService {
    */
   static async createTopic(
     participantId: string,
-    request: CreateTopicRequest
+    topicData: CreateTopicRequest
   ): Promise<Topic> {
-    // Admin server route (bypass status/RLS) if available
     const resp = await fetch("/api/topics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ participantId, ...request }),
+      body: JSON.stringify({ participantId, ...topicData }),
     });
-    if (resp.ok) {
-      const { topic } = (await resp.json()) as { topic: Topic };
-      return topic;
+
+    if (!resp.ok) {
+      const { error } = await resp.json();
+      console.error("API error:", error);
+      if (error === "ALREADY_CREATED_TOPIC") {
+        throw new Error(ErrorCodes.ALREADY_CREATED_TOPIC);
+      }
+      throw new Error(error || ErrorCodes.SERVER_ERROR);
+    }
+    const { topic } = await resp.json();
+    return topic;
+  }
+
+  static async deleteTopicAsAdmin(topicId: string): Promise<void> {
+    // We need to pass the user's auth token to the backend so it can
+    // verify that the user is an admin.
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("User not authenticated");
     }
 
-    // Fallback to client insert
-    const { data: existing } = await supabase
-      .from("topics")
-      .select("id")
-      .eq("bof_session_id", request.bof_session_id)
-      .eq("participant_id", participantId)
-      .single();
-    if (existing) throw new Error(ErrorCodes.ALREADY_CREATED_TOPIC);
+    const resp = await fetch(`/api/admin/topics/${topicId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    const { data, error } = await supabase
-      .from("topics")
-      .insert({
-        bof_session_id: request.bof_session_id,
-        participant_id: participantId,
-        title: request.title,
-        description: request.description,
-      })
-      .select()
-      .single<Topic>();
-
-    if (error || !data) throw new Error(ErrorCodes.SERVER_ERROR);
-    return data;
+    if (!resp.ok) {
+      const { error } = await resp.json();
+      throw new Error(error || "Failed to delete topic");
+    }
   }
 
   /**

@@ -72,6 +72,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 
 	const canCreateTopic = participant;
 	const hasCreatedTopic = topics.some((t) => t.author_id === participant?.id);
+	const isAdmin = participant?.role === "admin";
 
 	return (
 		<div className="pb-6 space-y-4 safe-top">
@@ -118,11 +119,12 @@ export default function BOFPage({ params }: BOFPageProps) {
 				)}
 
 				{/* Create topic button */}
-				{canCreateTopic && !hasCreatedTopic && (
+				{canCreateTopic && (!hasCreatedTopic || isAdmin) && (
 					<CreateTopicSheet
 						bofId={id}
 						participantId={participant.id}
 						onTopicCreated={refresh}
+						disabled={hasCreatedTopic && !isAdmin}
 					/>
 				)}
 
@@ -137,7 +139,8 @@ export default function BOFPage({ params }: BOFPageProps) {
 								: "No topics have been submitted yet."
 						}
 						action={
-							canCreateTopic && (
+							canCreateTopic &&
+							(!hasCreatedTopic || isAdmin) && (
 								<CreateTopicSheet
 									bofId={id}
 									participantId={participant.id}

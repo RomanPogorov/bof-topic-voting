@@ -62,10 +62,13 @@ export function CreateTopicSheet({
 			setDescription("");
 			onTopicCreated();
 		} catch (error: any) {
+			console.error("Create topic error:", error);
 			if (error.message === ErrorCodes.ALREADY_CREATED_TOPIC) {
 				toast.error("You've already created a topic for this session");
 			} else {
-				toast.error("Failed to create topic. Please try again.");
+				toast.error(
+					error.message || "Failed to create topic. Please try again.",
+				);
 			}
 		} finally {
 			setIsSubmitting(false);

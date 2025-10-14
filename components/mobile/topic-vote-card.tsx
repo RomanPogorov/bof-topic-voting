@@ -17,7 +17,11 @@ interface TopicVoteCardProps {
 	onVoteChange?: () => void;
 }
 
-export function TopicVoteCard({ topic, participantId, onVoteChange }: TopicVoteCardProps) {
+export function TopicVoteCard({
+	topic,
+	participantId,
+	onVoteChange,
+}: TopicVoteCardProps) {
 	const [voteState, setVoteState] = useState<VoteState>(VoteState.NOT_VOTED);
 	const [isVoting, setIsVoting] = useState(false);
 
@@ -30,7 +34,7 @@ export function TopicVoteCard({ topic, participantId, onVoteChange }: TopicVoteC
 
 			await VotesService.castVote(participantId, {
 				topic_id: topic.topic_id,
-				bof_session_id: topic.bof_session_id
+				bof_session_id: topic.bof_session_id,
 			});
 			setVoteState(VoteState.VOTED);
 			onVoteChange?.();
@@ -51,7 +55,9 @@ export function TopicVoteCard({ topic, participantId, onVoteChange }: TopicVoteC
 				<div className="space-y-3">
 					{/* Topic Header */}
 					<div className="space-y-2">
-						<h4 className="font-semibold text-sm leading-tight">{topic.title}</h4>
+						<h4 className="font-semibold text-sm leading-tight">
+							{topic.title}
+						</h4>
 						{topic.description && (
 							<p className="text-xs text-muted-foreground line-clamp-2">
 								{topic.description}
@@ -91,9 +97,7 @@ export function TopicVoteCard({ topic, participantId, onVoteChange }: TopicVoteC
 							) : (
 								<ThumbsUp className="h-3 w-3" />
 							)}
-							<span className="ml-1">
-								{isVoted ? "Voted" : "Vote"}
-							</span>
+							<span className="ml-1">{isVoted ? "Voted" : "Vote"}</span>
 						</Button>
 
 						<div className="flex items-center gap-2 text-xs text-muted-foreground">

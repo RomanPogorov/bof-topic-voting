@@ -78,7 +78,7 @@ export default function HomePage() {
 				{[1, 2, 3].map((day) => (
 					<div key={day} className="space-y-4">
 						<div className="flex items-center gap-3">
-							<div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+							<div className="h-8 w-8 rounded-full bg-gray-900 text-white flex items-center justify-center font-bold text-sm">
 								{day}
 							</div>
 							<h2 className="text-xl font-bold">Day {day}</h2>

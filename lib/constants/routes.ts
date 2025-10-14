@@ -1,6 +1,7 @@
 export const ROUTES = {
   // Auth
   AUTH: (token: string) => `/auth/${token}`,
+  ACCESS_DENIED: "/access-denied",
 
   // Mobile
   HOME: "/",
