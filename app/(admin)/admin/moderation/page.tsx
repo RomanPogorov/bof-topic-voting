@@ -194,7 +194,7 @@ export default function ModerationPage() {
 								<div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
 									<div className="flex items-center gap-1">
 										<User className="h-4 w-4" />
-										<span>{topic.participant_name || "Anonymous"}</span>
+										<span>{topic.author_name || "Anonymous"}</span>
 									</div>
 									<div className="flex items-center gap-1">
 										<Calendar className="h-4 w-4" />

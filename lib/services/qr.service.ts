@@ -21,7 +21,6 @@ export function generateAuthToken(): string {
 }
 
 export class QRService {
-
   /**
    * Generate QR code as data URL
    */
