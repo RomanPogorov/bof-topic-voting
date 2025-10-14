@@ -12,49 +12,41 @@ export class AuthService {
    * Verify token and create/update session with multi-device protection
    */
   static async verifyAndCreateSession(token: string): Promise<AuthResponse> {
-    // 1. Verify token and get participant
-    const { data: participant, error: participantError } = await supabase
-      .from("participants")
-      .select("*")
-      .eq("auth_token", token)
-      .single<Participant>();
-
-    if (participantError || !participant) {
-      throw new Error(ErrorCodes.INVALID_TOKEN);
-    }
-
-    if (participant.is_blocked) {
-      throw new Error(ErrorCodes.BLOCKED_USER);
-    }
-
-    // 2. Get device fingerprint
+    // 1. Get device fingerprint
     const deviceInfo = await getDeviceInfo();
 
-    // 3. Create or update session
-    const { data: session, error: sessionError } = await supabase
-      .from("participant_sessions")
-      .upsert({
-        participant_id: participant.id,
-        device_fingerprint: deviceInfo.fingerprint,
-        ip_address: deviceInfo.ipAddress,
-        user_agent: deviceInfo.userAgent,
-        last_activity: new Date().toISOString(),
-      })
-      .select()
-      .single<ParticipantSession>();
+    // 2. Call server route to verify and upsert session using service role
+    const resp = await fetch("/api/auth/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, device: deviceInfo }),
+    });
 
-    if (sessionError || !session) {
-      throw new Error(ErrorCodes.SERVER_ERROR);
+    if (!resp.ok) {
+      const { error } = await resp.json();
+      switch (error) {
+        case "INVALID_TOKEN":
+          throw new Error(ErrorCodes.INVALID_TOKEN);
+        case "BLOCKED_USER":
+          throw new Error(ErrorCodes.BLOCKED_USER);
+        default:
+          throw new Error(ErrorCodes.SERVER_ERROR);
+      }
     }
 
-    // 4. Store in localStorage
+    const { participant, session } = (await resp.json()) as {
+      participant: Participant;
+      session: ParticipantSession;
+    };
+
+    // 3. Store in localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("auth_token", token);
       localStorage.setItem("participant_id", participant.id);
       localStorage.setItem("session_id", session.id);
     }
 
-    // 5. Log analytics event
+    // 4. Log analytics event (client ok)
     await supabase.from("analytics_events").insert({
       participant_id: participant.id,
       event_type: "qr_scanned",

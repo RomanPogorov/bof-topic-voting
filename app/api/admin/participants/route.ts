@@ -18,8 +18,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ participant: data }, { status: 200 });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
   }
 }
-
-
