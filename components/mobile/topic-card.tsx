@@ -139,6 +139,7 @@ export function TopicCard({
 						className={cn(
 							"min-w-[100px] touch-target",
 							isVoted && "bg-primary hover:bg-primary/90",
+							isOwnTopic && "bg-gray-100 text-gray-500 border-gray-200",
 						)}
 					>
 						{isThisTopicVoting ? (

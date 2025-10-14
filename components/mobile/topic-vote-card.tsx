@@ -24,9 +24,10 @@ export function TopicVoteCard({
 }: TopicVoteCardProps) {
 	const [voteState, setVoteState] = useState<VoteState>(VoteState.NOT_VOTED);
 	const [isVoting, setIsVoting] = useState(false);
+	const isOwnTopic = topic.author_id === participantId;
 
 	const handleVote = async () => {
-		if (isVoting) return;
+		if (isVoting || isOwnTopic) return;
 
 		try {
 			setIsVoting(true);
@@ -89,15 +90,19 @@ export function TopicVoteCard({
 							size="sm"
 							variant={isVoted ? "default" : "outline"}
 							onClick={handleVote}
-							disabled={isVotingThis}
-							className="h-8 px-3 text-xs"
+							disabled={isVotingThis || isOwnTopic}
+							className={`h-8 px-3 text-xs ${
+								isOwnTopic ? "bg-gray-100 text-gray-500 border-gray-200" : ""
+							}`}
 						>
 							{isVotingThis ? (
 								<Loader2 className="h-3 w-3 animate-spin" />
-							) : (
+							) : isOwnTopic ? null : (
 								<ThumbsUp className="h-3 w-3" />
 							)}
-							<span className="ml-1">{isVoted ? "Voted" : "Vote"}</span>
+							<span className="ml-1">
+								{isOwnTopic ? "Your Topic" : isVoted ? "Voted" : "Vote"}
+							</span>
 						</Button>
 
 						<div className="flex items-center gap-2 text-xs text-muted-foreground">

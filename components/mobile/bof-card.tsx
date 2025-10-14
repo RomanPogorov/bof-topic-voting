@@ -30,9 +30,11 @@ function SimpleTopicRow({
 	const hasVoted =
 		Array.isArray(topic.voters) &&
 		topic.voters.some((v) => v.id === participantId);
+	
+	const isOwnTopic = topic.author_id === participantId;
 
 	const handleVote = async () => {
-		if (isVoting) return;
+		if (isVoting || isOwnTopic) return;
 		setIsVoting(true);
 		try {
 			await VotesService.castVote(participantId, {
@@ -55,9 +57,10 @@ function SimpleTopicRow({
 				size="sm"
 				variant={hasVoted ? "secondary" : "outline"}
 				onClick={handleVote}
-				disabled={isVoting}
+				disabled={isVoting || isOwnTopic}
 				className={`transition-all text-xs h-8 px-3 ${
-					hasVoted ? "bg-green-600 text-white hover:bg-green-700" : "bg-white"
+					hasVoted ? "bg-green-600 text-white hover:bg-green-700" : 
+					isOwnTopic ? "bg-gray-100 text-gray-500 border-gray-200" : "bg-white"
 				}`}
 			>
 				{isVoting ? (
@@ -67,6 +70,8 @@ function SimpleTopicRow({
 						<Check className="h-4 w-4 mr-1" />
 						Voted
 					</>
+				) : isOwnTopic ? (
+					"Your Topic"
 				) : (
 					<>
 						<ThumbsUp className="h-4 w-4 mr-1" />
