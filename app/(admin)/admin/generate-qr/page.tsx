@@ -35,17 +35,19 @@ export default function GenerateQRPage() {
 			// 1) Generate token
 			const token = await generateAuthToken();
 
-			// 2) Create participant in Supabase with this token
-			const { error: insertError } = await supabase
-				.from("participants")
-				.insert({
+			// 2) Create participant in Supabase with this token (server-side via API)
+			const resp = await fetch("/api/admin/participants", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
 					name,
 					company: company || null,
 					email: `${token}@qr.local`,
 					auth_token: token,
-				});
-			if (insertError) {
-				throw insertError;
+				}),
+			});
+			if (!resp.ok) {
+				throw new Error(await resp.text());
 			}
 
 			// 3) Build public auth URL for the current deployment
