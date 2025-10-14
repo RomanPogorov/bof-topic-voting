@@ -266,7 +266,7 @@ export default function TVDisplayPage() {
 						<div className="space-y-3">
 							{leaderboard.map((participant, index) => (
 								<LeaderboardCard
-									key={participant.participant_id}
+									key={participant.id}
 									participant={participant}
 									rank={index + 1}
 								/>
