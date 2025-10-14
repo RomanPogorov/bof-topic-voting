@@ -55,7 +55,7 @@ function SimpleTopicRow({
 				size="sm"
 				variant={hasVoted ? "secondary" : "outline"}
 				onClick={handleVote}
-				disabled={isVoting || hasVoted}
+				disabled={isVoting}
 				className={`transition-all text-xs h-8 px-3 ${
 					hasVoted ? "bg-green-600 text-white hover:bg-green-700" : "bg-white"
 				}`}
@@ -65,7 +65,7 @@ function SimpleTopicRow({
 				) : hasVoted ? (
 					<>
 						<Check className="h-4 w-4 mr-1" />
-						Voted
+						Change Vote
 					</>
 				) : (
 					<>
