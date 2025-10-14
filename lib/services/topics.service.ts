@@ -76,9 +76,7 @@ export class TopicsService {
   /**
    * Get topics created by a participant
    */
-  static async getParticipantTopics(
-    participantId: string
-  ): Promise<Topic[]> {
+  static async getParticipantTopics(participantId: string): Promise<Topic[]> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")

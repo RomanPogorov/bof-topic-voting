@@ -18,7 +18,10 @@ export async function POST(request: Request) {
       .eq("bof_session_id", bof_session_id)
       .single();
     if (existing) {
-      return NextResponse.json({ error: "ALREADY_CREATED_TOPIC" }, { status: 409 });
+      return NextResponse.json(
+        { error: "ALREADY_CREATED_TOPIC" },
+        { status: 409 }
+      );
     }
 
     const { data, error } = await supabaseAdmin
@@ -38,8 +41,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ topic: data }, { status: 200 });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message || "SERVER_ERROR" }, { status: 500 });
+    return NextResponse.json(
+      { error: e.message || "SERVER_ERROR" },
+      { status: 500 }
+    );
   }
 }
-
-

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/lib/contexts/auth-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +28,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="smooth-scroll">
 			<body className={inter.className}>
-				{children}
+				<AuthProvider>{children}</AuthProvider>
 				<Toaster position="top-center" richColors />
 			</body>
 		</html>
