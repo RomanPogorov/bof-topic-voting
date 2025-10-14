@@ -1,27 +1,26 @@
 import { supabase } from "../supabase/client";
-import { Topic, TopicDetails, CreateTopicRequest, ErrorCodes } from "../types";
+import { Topic, CreateTopicRequest, ErrorCodes, BOFStatus } from "../types";
 import { AnalyticsService } from "./analytics.service";
 
 export class TopicsService {
   /**
    * Get all topics for a BOF session
    */
-  static async getTopics(bofSessionId: string): Promise<TopicDetails[]> {
+  static async getTopics(bofSessionId: string): Promise<Topic[]> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
       .eq("bof_session_id", bofSessionId)
-      .order("vote_count", { ascending: false })
-      .order("created_at", { ascending: true });
+      .order("vote_count", { ascending: false });
 
     if (error) throw new Error(ErrorCodes.SERVER_ERROR);
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
    * Get a single topic by ID
    */
-  static async getTopic(topicId: string): Promise<TopicDetails | null> {
+  static async getTopic(topicId: string): Promise<Topic | null> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
@@ -39,41 +38,38 @@ export class TopicsService {
     participantId: string,
     request: CreateTopicRequest
   ): Promise<Topic> {
-    // Check if user already created a topic for this BOF
+    // Admin server route (bypass status/RLS) if available
+    const resp = await fetch("/api/topics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ participantId, ...request }),
+    });
+    if (resp.ok) {
+      const { topic } = (await resp.json()) as { topic: Topic };
+      return topic;
+    }
+
+    // Fallback to client insert
     const { data: existing } = await supabase
       .from("topics")
       .select("id")
       .eq("bof_session_id", request.bof_session_id)
       .eq("participant_id", participantId)
       .single();
+    if (existing) throw new Error(ErrorCodes.ALREADY_CREATED_TOPIC);
 
-    if (existing) {
-      throw new Error(ErrorCodes.ALREADY_CREATED_TOPIC);
-    }
-
-    // Create topic
     const { data, error } = await supabase
       .from("topics")
       .insert({
         bof_session_id: request.bof_session_id,
         participant_id: participantId,
         title: request.title,
-        description: request.description || null,
+        description: request.description,
       })
       .select()
       .single<Topic>();
 
-    if (error || !data) {
-      throw new Error(ErrorCodes.SERVER_ERROR);
-    }
-
-    // Track analytics
-    await AnalyticsService.trackTopicCreated(
-      participantId,
-      data.id,
-      request.bof_session_id
-    );
-
+    if (error || !data) throw new Error(ErrorCodes.SERVER_ERROR);
     return data;
   }
 
@@ -82,7 +78,7 @@ export class TopicsService {
    */
   static async getParticipantTopics(
     participantId: string
-  ): Promise<TopicDetails[]> {
+  ): Promise<Topic[]> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
@@ -90,7 +86,7 @@ export class TopicsService {
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(ErrorCodes.SERVER_ERROR);
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
