@@ -1,5 +1,5 @@
 import { supabase } from "../supabase/client";
-import { Topic, CreateTopicRequest, ErrorCodes } from "../types";
+import { Topic, TopicDetails, CreateTopicRequest, ErrorCodes } from "../types";
 import { AnalyticsService } from "./analytics.service";
 
 export class TopicsService {
@@ -20,7 +20,7 @@ export class TopicsService {
   /**
    * Get a single topic by ID
    */
-  static async getTopic(topicId: string): Promise<Topic | null> {
+  static async getTopic(topicId: string): Promise<TopicDetails | null> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
@@ -76,7 +76,7 @@ export class TopicsService {
   /**
    * Get topics created by a participant
    */
-  static async getParticipantTopics(participantId: string): Promise<Topic[]> {
+  static async getParticipantTopics(participantId: string): Promise<TopicDetails[]> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
