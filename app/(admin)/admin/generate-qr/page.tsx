@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateAuthToken } from "@/lib/services/qr.service";
+import { supabase } from "@/lib/supabase/client";
 import { QrCode, Download, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import QRCodeLib from "qrcode";
@@ -31,7 +32,18 @@ export default function GenerateQRPage() {
 
 		setIsGenerating(true);
 		try {
+			// 1) Generate token
 			const token = await generateAuthToken();
+
+			// 2) Create participant in Supabase with this token
+			const { error: insertError } = await supabase
+				.from("participants")
+				.insert({ name, company: company || null, email: null, auth_token: token });
+			if (insertError) {
+				throw insertError;
+			}
+
+			// 3) Build public auth URL for the current deployment
 			const url = `${window.location.origin}/auth/${token}`;
 
 			// Generate QR code
