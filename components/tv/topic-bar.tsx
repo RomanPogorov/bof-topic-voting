@@ -70,7 +70,7 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 
 				{/* Author */}
 				<p className="mb-4 text-sm text-slate-400">
-					by {topic.participant_name || "Anonymous"}
+					by {topic.author_name || "Anonymous"}
 				</p>
 
 				{/* Vote Count & Bar */}
