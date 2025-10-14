@@ -4,7 +4,8 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 export async function POST(request: Request) {
   try {
     const { token, device } = await request.json();
-    if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
+    if (!token)
+      return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
     // 1) Verify participant by token
     const { data: participant, error: pErr } = await supabaseAdmin
@@ -38,8 +39,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ participant, session }, { status: 200 });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message || "SERVER_ERROR" }, { status: 500 });
+    return NextResponse.json(
+      { error: e.message || "SERVER_ERROR" },
+      { status: 500 }
+    );
   }
 }
-
-

@@ -94,15 +94,14 @@ export class AuthService {
     const participantId = localStorage.getItem("participant_id");
     if (!participantId) return null;
 
-    const { data, error } = await supabase
-      .from("participants")
-      .select("*")
-      .eq("id", participantId)
-      .single<Participant>();
-
-    if (error || !data) return null;
-
-    return data;
+    const resp = await fetch("/api/auth/me", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ participantId }),
+    });
+    if (!resp.ok) return null;
+    const { participant } = (await resp.json()) as { participant: Participant };
+    return participant;
   }
 
   /**
