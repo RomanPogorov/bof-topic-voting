@@ -1,12 +1,12 @@
 import { supabase } from "../supabase/client";
-import { Topic, TopicDetails, CreateTopicRequest, ErrorCodes } from "../types";
-import { AnalyticsService } from "./analytics.service";
+import type { Topic, TopicDetails, CreateTopicRequest } from "../types";
+import { ErrorCodes } from "../types";
 
 export class TopicsService {
   /**
    * Get all topics for a BOF session
    */
-  static async getTopics(bofSessionId: string): Promise<Topic[]> {
+  static async getTopics(bofSessionId: string): Promise<TopicDetails[]> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
@@ -14,7 +14,7 @@ export class TopicsService {
       .order("vote_count", { ascending: false });
 
     if (error) throw new Error(ErrorCodes.SERVER_ERROR);
-    return (data as any) || [];
+    return (data as TopicDetails[]) || [];
   }
 
   /**
@@ -76,7 +76,9 @@ export class TopicsService {
   /**
    * Get topics created by a participant
    */
-  static async getParticipantTopics(participantId: string): Promise<TopicDetails[]> {
+  static async getParticipantTopics(
+    participantId: string
+  ): Promise<TopicDetails[]> {
     const { data, error } = await supabase
       .from("topic_details")
       .select("*")
@@ -84,7 +86,7 @@ export class TopicsService {
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(ErrorCodes.SERVER_ERROR);
-    return (data as any) || [];
+    return (data as TopicDetails[]) || [];
   }
 
   /**
