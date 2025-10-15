@@ -32,7 +32,8 @@ function SimpleTopicRow({
 
 	const isOwnTopic = topic.author_id === participantId;
 
-	const handleVote = async () => {
+	const handleVote = async (e: React.MouseEvent) => {
+		e.stopPropagation();
 		if (isVoting || isOwnTopic) return;
 		setIsVoting(true);
 		try {
@@ -49,14 +50,17 @@ function SimpleTopicRow({
 	};
 
 	return (
-		<div className="flex items-center gap-2 bg-[#f5f5f6] h-[40px] rounded-[6px] pl-4 pr-2 py-px">
-			<p className="font-medium text-[15px] leading-[16px] text-zinc-950 flex-1">
+		<Link
+			href={ROUTES.BOF(topic.bof_session_id)}
+			className="flex items-center gap-2 bg-[#f5f5f6] rounded-[6px] pl-2 pr-2 py-1 hover:bg-[#ebebed] transition-colors"
+		>
+			<p className="text-[15px] leading-[16px] text-zinc-950 flex-1 overflow-hidden text-ellipsis whitespace-nowrap [letter-spacing:-0.03em]">
 				{topic.title}
 			</p>
 			<Button
 				onClick={handleVote}
 				disabled={isVoting || isOwnTopic}
-				className={`h-[32px] w-[78px] px-3 rounded-[6px] text-[12px] font-medium leading-[16px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] flex items-center justify-center gap-1 ${
+				className={`h-[40px] w-[102px] px-3 rounded-[6px] text-[12px] font-medium leading-[16px] flex items-center justify-center gap-1 shadow-sm ${
 					hasVoted
 						? "bg-[#ea4a35] hover:bg-[#ea4a35]/90 text-white"
 						: "bg-white hover:bg-white/90 text-zinc-900"
@@ -67,16 +71,30 @@ function SimpleTopicRow({
 				) : hasVoted ? (
 					<>
 						<Check className="h-4 w-4" />
-						Voted
+						<span>Voted</span>
+						<div
+							className={`flex items-center justify-center px-1.5 py-0.5 rounded-full bg-[#d52c16]`}
+						>
+							<span className="text-[12px] leading-[16px] font-medium text-white">
+								{topic.vote_count}
+							</span>
+						</div>
 					</>
 				) : (
 					<>
 						<ThumbsUp className="h-4 w-4" />
-						Vote
+						<span>Vote</span>
+						<div
+							className={`flex items-center justify-center px-1.5 py-0.5 rounded-full bg-[#efeff1]`}
+						>
+							<span className="text-[12px] leading-[16px] font-medium text-zinc-900">
+								{topic.vote_count}
+							</span>
+						</div>
 					</>
 				)}
 			</Button>
-		</div>
+		</Link>
 	);
 }
 
@@ -84,6 +102,7 @@ export function BOFCard({ session }: BOFCardProps) {
 	const { participant } = useAuth();
 	const [topics, setTopics] = useState<TopicDetails[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [showAll, setShowAll] = useState(false);
 
 	useEffect(() => {
 		async function fetchTopics() {
@@ -123,11 +142,12 @@ export function BOFCard({ session }: BOFCardProps) {
 		});
 	};
 
-	const topicsToShow = topics.slice(0, 5);
+	const topicsToShow = showAll ? topics : topics.slice(0, 5);
+	const remainingCount = Math.max(0, topics.length - 5);
 
 	return (
 		<Card className="rounded-[16px] shadow-none border-none">
-			<CardContent className="pt-6 pb-8 px-6 flex flex-col gap-4">
+			<CardContent className="pt-4 pb-8 px-4 flex flex-col gap-4">
 				{/* Header */}
 				<div className="flex items-center gap-4">
 					<h3 className="font-bold text-[20px] leading-[28px] text-zinc-950 flex-1">
@@ -139,13 +159,6 @@ export function BOFCard({ session }: BOFCardProps) {
 							{formatDate(session.session_time, "p")}
 						</span>
 					</div>
-				</div>
-
-				{/* Vote for topic heading */}
-				<div className="flex items-center justify-center">
-					<h4 className="text-[16px] leading-[22.5px] text-zinc-950">
-						Vote for topic
-					</h4>
 				</div>
 
 				{/* Topics List */}
@@ -172,14 +185,15 @@ export function BOFCard({ session }: BOFCardProps) {
 
 				{/* Footer Buttons */}
 				<div className="flex gap-2">
-					<Link href={ROUTES.BOF(session.id)}>
+					{remainingCount > 0 && (
 						<Button
 							variant="outline"
-							className="h-[40px] w-[124px] rounded-[6px] border-2 border-neutral-500 text-neutral-500 font-medium text-[14px] leading-[16px] bg-white hover:bg-white/90"
+							onClick={() => setShowAll(!showAll)}
+							className="h-[40px] w-[140px] rounded-[6px] border-2 border-neutral-500 text-neutral-500 font-medium text-[14px] leading-[16px] bg-white hover:bg-white/90"
 						>
-							Show All ({topics.length})
+							{showAll ? "Show Less" : `Show (${remainingCount} more)`}
 						</Button>
-					</Link>
+					)}
 					<Link href={ROUTES.BOF(session.id)} className="flex-1">
 						<Button
 							variant="outline"

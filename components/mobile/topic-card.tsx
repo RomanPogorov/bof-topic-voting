@@ -63,7 +63,9 @@ export function TopicCard({
 					className={`h-[40px] rounded-[6px] flex items-center gap-[4px] px-[12px] overflow-clip shrink-0 transition-all ${
 						isVoted
 							? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
-							: "bg-white hover:bg-white/90 border border-black"
+							: isOwnTopic
+								? "bg-white hover:bg-white/90"
+								: "bg-white hover:bg-white/90 border border-gray-300"
 					}`}
 				>
 					{isThisTopicVoting ? (
