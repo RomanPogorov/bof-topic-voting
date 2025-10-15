@@ -16,9 +16,11 @@ import {
 	Trophy,
 	QrCode,
 	RefreshCw,
+	Printer,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
 import { QRModal } from "@/components/admin/qr-modal";
+import { BulkQRModal } from "@/components/admin/bulk-qr-modal";
 
 interface ParticipantWithStats extends Participant {
 	votes_cast?: number;
@@ -37,6 +39,7 @@ export default function ParticipantsPage() {
 	const [selectedParticipant, setSelectedParticipant] =
 		useState<ParticipantWithStats | null>(null);
 	const [showQRModal, setShowQRModal] = useState(false);
+	const [showBulkQRModal, setShowBulkQRModal] = useState(false);
 
 	const fetchParticipants = useCallback(async () => {
 		try {
@@ -94,10 +97,19 @@ export default function ParticipantsPage() {
 						View and manage registered participants
 					</p>
 				</div>
-				<Button onClick={fetchParticipants} variant="outline">
-					<RefreshCw className="h-4 w-4 mr-2" />
-					Refresh
-				</Button>
+				<div className="flex gap-2">
+					<Button
+						onClick={() => setShowBulkQRModal(true)}
+						className="flex items-center gap-2"
+					>
+						<Printer className="h-4 w-4" />
+						Печать всех QR-кодов
+					</Button>
+					<Button onClick={fetchParticipants} variant="outline">
+						<RefreshCw className="h-4 w-4 mr-2" />
+						Refresh
+					</Button>
+				</div>
 			</div>
 
 			{/* Search */}
@@ -262,6 +274,13 @@ export default function ParticipantsPage() {
 					}}
 				/>
 			)}
+
+			{/* Bulk QR Modal */}
+			<BulkQRModal
+				isOpen={showBulkQRModal}
+				onClose={() => setShowBulkQRModal(false)}
+				participants={participants}
+			/>
 		</div>
 	);
 }
