@@ -58,10 +58,15 @@ export async function GET() {
       { participants: participantsWithStats },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching participants:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch participants" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch participants",
+      },
       { status: 500 }
     );
   }
@@ -103,10 +108,79 @@ export async function POST(request: Request) {
 
     console.log("Successfully created participant:", participant);
     return NextResponse.json({ participant }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating participant:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create participant" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to create participant",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    const deleteAll = searchParams.get("all") === "true";
+
+    if (deleteAll) {
+      // Удалить всех участников
+      console.log("Deleting all participants...");
+
+      const { error } = await supabaseAdmin
+        .from("participants")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all
+
+      if (error) {
+        console.error("Error deleting all participants:", error);
+        throw error;
+      }
+
+      console.log("Successfully deleted all participants");
+      return NextResponse.json(
+        { message: "All participants deleted successfully" },
+        { status: 200 }
+      );
+    } else if (id) {
+      // Удалить одного участника
+      console.log("Deleting participant:", id);
+
+      const { error } = await supabaseAdmin
+        .from("participants")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error deleting participant:", error);
+        throw error;
+      }
+
+      console.log("Successfully deleted participant:", id);
+      return NextResponse.json(
+        { message: "Participant deleted successfully" },
+        { status: 200 }
+      );
+    } else {
+      return NextResponse.json(
+        { error: "Missing id or all parameter" },
+        { status: 400 }
+      );
+    }
+  } catch (error: unknown) {
+    console.error("Error in DELETE handler:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete participant(s)",
+      },
       { status: 500 }
     );
   }

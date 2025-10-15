@@ -17,10 +17,21 @@ import {
 	QrCode,
 	RefreshCw,
 	Printer,
+	Trash2,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
 import { QRModal } from "@/components/admin/qr-modal";
 import { BulkQRModal } from "@/components/admin/bulk-qr-modal";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ParticipantWithStats extends Participant {
 	votes_cast?: number;
@@ -40,6 +51,11 @@ export default function ParticipantsPage() {
 		useState<ParticipantWithStats | null>(null);
 	const [showQRModal, setShowQRModal] = useState(false);
 	const [showBulkQRModal, setShowBulkQRModal] = useState(false);
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+	const [participantToDelete, setParticipantToDelete] =
+		useState<ParticipantWithStats | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const fetchParticipants = useCallback(async () => {
 		try {
@@ -87,6 +103,61 @@ export default function ParticipantsPage() {
 		setShowQRModal(true);
 	}
 
+	function handleDeleteClick(participant: ParticipantWithStats) {
+		setParticipantToDelete(participant);
+		setShowDeleteDialog(true);
+	}
+
+	async function handleDeleteConfirm() {
+		if (!participantToDelete) return;
+
+		try {
+			setIsDeleting(true);
+			const response = await fetch(
+				`/api/admin/participants?id=${participantToDelete.id}`,
+				{
+					method: "DELETE",
+				},
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to delete participant");
+			}
+
+			// Refresh the list
+			await fetchParticipants();
+			setShowDeleteDialog(false);
+			setParticipantToDelete(null);
+		} catch (err) {
+			console.error("Error deleting participant:", err);
+			alert("Failed to delete participant. Please try again.");
+		} finally {
+			setIsDeleting(false);
+		}
+	}
+
+	async function handleDeleteAllConfirm() {
+		try {
+			setIsDeleting(true);
+			const response = await fetch("/api/admin/participants?all=true", {
+				method: "DELETE",
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to delete all participants");
+			}
+
+			// Refresh the list
+			await fetchParticipants();
+			setShowDeleteAllDialog(false);
+		} catch (err) {
+			console.error("Error deleting all participants:", err);
+			alert("Failed to delete all participants. Please try again.");
+		} finally {
+			setIsDeleting(false);
+		}
+	}
+
 	return (
 		<div className="space-y-8">
 			{/* Header */}
@@ -104,6 +175,14 @@ export default function ParticipantsPage() {
 					>
 						<Printer className="h-4 w-4" />
 						Печать всех QR-кодов
+					</Button>
+					<Button
+						onClick={() => setShowDeleteAllDialog(true)}
+						variant="destructive"
+						disabled={participants.length === 0}
+					>
+						<Trash2 className="h-4 w-4 mr-2" />
+						Удалить всех
 					</Button>
 					<Button onClick={fetchParticipants} variant="outline">
 						<RefreshCw className="h-4 w-4 mr-2" />
@@ -222,6 +301,16 @@ export default function ParticipantsPage() {
 											Показать QR
 										</Button>
 
+										{/* Delete Button */}
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => handleDeleteClick(participant)}
+											className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+
 										{/* Stats */}
 										<div className="flex gap-6 text-center">
 											<div>
@@ -281,6 +370,58 @@ export default function ParticipantsPage() {
 				onClose={() => setShowBulkQRModal(false)}
 				participants={participants}
 			/>
+
+			{/* Delete Participant Dialog */}
+			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Удалить участника?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Вы действительно хотите удалить участника{" "}
+							<strong>{participantToDelete?.name}</strong>? Это действие нельзя
+							отменить. Все данные участника, включая голоса и топики, будут
+							удалены.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={isDeleting}>Отмена</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleDeleteConfirm}
+							disabled={isDeleting}
+							className="bg-red-600 hover:bg-red-700"
+						>
+							{isDeleting ? "Удаление..." : "Удалить"}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			{/* Delete All Participants Dialog */}
+			<AlertDialog
+				open={showDeleteAllDialog}
+				onOpenChange={setShowDeleteAllDialog}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Удалить всех участников?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Вы действительно хотите удалить ВСЕХ {participants.length}{" "}
+							участников? Это действие нельзя отменить. Все данные всех
+							участников, включая голоса и топики, будут удалены безвозвратно.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={isDeleting}>Отмена</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleDeleteAllConfirm}
+							disabled={isDeleting}
+							className="bg-red-600 hover:bg-red-700"
+						>
+							{isDeleting ? "Удаление..." : "Удалить всех"}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
