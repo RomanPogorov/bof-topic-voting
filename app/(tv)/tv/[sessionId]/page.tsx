@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import type { TopicDetails, ParticipantStats, BOFSession } from "@/lib/types";
 import { supabase } from "@/lib/supabase/client";
@@ -21,6 +21,8 @@ export default function TVDisplayPage() {
 	const [leaderboard, setLeaderboard] = useState<ParticipantStats[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+	const [isUpdating, setIsUpdating] = useState(false);
+	const [hasRecentActivity, setHasRecentActivity] = useState(false);
 
 	// Fetch session details
 	useEffect(() => {
@@ -37,10 +39,12 @@ export default function TVDisplayPage() {
 		fetchSession();
 	}, [sessionId]);
 
-	// Fetch topics
-	useEffect(() => {
-		async function fetchTopics() {
+	// Fetch topics with update indicator
+	const fetchTopics = useCallback(
+		async (showIndicator = false) => {
 			try {
+				if (showIndicator) setIsUpdating(true);
+
 				const { data, error } = await supabase
 					.from("topic_details")
 					.select("*")
@@ -52,13 +56,23 @@ export default function TVDisplayPage() {
 				if (error) throw error;
 				setTopics(data || []);
 				setLastUpdate(new Date());
+				setHasRecentActivity(true);
+				// Reset activity flag after 2 minutes
+				setTimeout(() => setHasRecentActivity(false), 120000);
 			} catch (err) {
 				console.error("Error fetching topics:", err);
 			} finally {
 				setIsLoading(false);
+				if (showIndicator) {
+					setTimeout(() => setIsUpdating(false), 1000);
+				}
 			}
-		}
+		},
+		[sessionId],
+	);
 
+	// Fetch topics
+	useEffect(() => {
 		fetchTopics();
 
 		// Subscribe to real-time updates
@@ -72,7 +86,7 @@ export default function TVDisplayPage() {
 					table: "votes",
 				},
 				() => {
-					fetchTopics();
+					fetchTopics(true); // Show update indicator
 				},
 			)
 			.on(
@@ -83,33 +97,47 @@ export default function TVDisplayPage() {
 					table: "topics",
 				},
 				() => {
-					fetchTopics();
+					fetchTopics(true); // Show update indicator
 				},
 			)
 			.subscribe();
 
+		// Adaptive refresh: more frequent when there's activity
+		const refreshInterval = hasRecentActivity ? 3000 : 15000; // 3s if active, 15s if not
+		const interval = setInterval(() => {
+			fetchTopics(true);
+		}, refreshInterval);
+
 		return () => {
 			supabase.removeChannel(channel);
+			clearInterval(interval);
 		};
-	}, [sessionId]);
+	}, [sessionId, fetchTopics, hasRecentActivity]);
+
+	// Fetch leaderboard with update indicator
+	const fetchLeaderboard = useCallback(async (showIndicator = false) => {
+		try {
+			if (showIndicator) setIsUpdating(true);
+
+			const { data, error } = await supabase
+				.from("participant_stats")
+				.select("*")
+				.order("total_points", { ascending: false })
+				.limit(5);
+
+			if (error) throw error;
+			setLeaderboard(data || []);
+		} catch (err) {
+			console.error("Error fetching leaderboard:", err);
+		} finally {
+			if (showIndicator) {
+				setTimeout(() => setIsUpdating(false), 1000);
+			}
+		}
+	}, []);
 
 	// Fetch leaderboard
 	useEffect(() => {
-		async function fetchLeaderboard() {
-			try {
-				const { data, error } = await supabase
-					.from("participant_stats")
-					.select("*")
-					.order("total_points", { ascending: false })
-					.limit(5);
-
-				if (error) throw error;
-				setLeaderboard(data || []);
-			} catch (err) {
-				console.error("Error fetching leaderboard:", err);
-			}
-		}
-
 		fetchLeaderboard();
 
 		// Subscribe to real-time leaderboard updates
@@ -123,15 +151,32 @@ export default function TVDisplayPage() {
 					table: "participant_achievements",
 				},
 				() => {
-					fetchLeaderboard();
+					fetchLeaderboard(true);
+				},
+			)
+			.on(
+				"postgres_changes",
+				{
+					event: "*",
+					schema: "public",
+					table: "votes",
+				},
+				() => {
+					fetchLeaderboard(true);
 				},
 			)
 			.subscribe();
 
+		// Fallback: periodic refresh every 60 seconds
+		const interval = setInterval(() => {
+			fetchLeaderboard(true);
+		}, 60000);
+
 		return () => {
 			supabase.removeChannel(channel);
+			clearInterval(interval);
 		};
-	}, []);
+	}, [fetchLeaderboard]);
 
 	if (isLoading) {
 		return (
@@ -178,6 +223,12 @@ export default function TVDisplayPage() {
 					<div className="flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-2">
 						<div className="h-3 w-3 animate-pulse rounded-full bg-red-500" />
 						<span className="text-sm font-medium text-red-400">LIVE</span>
+						{isUpdating && (
+							<div className="ml-2 flex items-center gap-1">
+								<div className="h-2 w-2 animate-spin rounded-full border border-white border-t-transparent" />
+								<span className="text-xs text-white">Updating...</span>
+							</div>
+						)}
 					</div>
 				</div>
 

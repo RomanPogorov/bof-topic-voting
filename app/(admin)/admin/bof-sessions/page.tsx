@@ -31,8 +31,8 @@ export default function AdminBOFSessionsPage() {
 		const { data: sessionsData } = await supabase
 			.from("bof_sessions")
 			.select("id, day_number, session_number, title, description")
-			.order("day_number")
-			.order("session_number");
+			.order("day_number", { ascending: true })
+			.order("session_time", { ascending: true });
 
 		if (!sessionsData) {
 			setSessions([]);

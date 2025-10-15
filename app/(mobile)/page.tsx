@@ -40,6 +40,14 @@ export default function HomePage() {
 		{} as Record<string, typeof sessions>,
 	);
 
+	// Sort sessions within each date by session_time
+	Object.keys(sessionsByDate).forEach((dateKey) => {
+		sessionsByDate[dateKey].sort(
+			(a, b) =>
+				new Date(a.session_time).getTime() - new Date(b.session_time).getTime(),
+		);
+	});
+
 	return (
 		<div className="bg-[#f5f5f6] min-h-screen pb-4 px-4">
 			<div className="flex flex-col gap-6">

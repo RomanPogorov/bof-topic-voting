@@ -21,7 +21,7 @@ export default function TVSelectPage() {
 					.from("bof_sessions")
 					.select("*")
 					.order("day_number", { ascending: true })
-					.order("session_number", { ascending: true });
+					.order("session_time", { ascending: true });
 
 				if (error) throw error;
 				setSessions(data || []);

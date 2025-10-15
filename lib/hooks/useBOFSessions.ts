@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase/client";
-import { BOFSession } from "../types";
+import type { BOFSession } from "../types";
 
 export function useBOFSessions() {
   const [sessions, setSessions] = useState<BOFSession[]>([]);
@@ -15,7 +15,7 @@ export function useBOFSessions() {
           .from("bof_sessions")
           .select("*")
           .order("day_number", { ascending: true })
-          .order("session_number", { ascending: true });
+          .order("session_time", { ascending: true });
 
         if (error) throw error;
         setSessions(data || []);

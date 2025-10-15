@@ -80,7 +80,7 @@ export function CreateTopicSheet({
 			<SheetTrigger asChild>
 				<Button className="w-full touch-target" disabled={disabled} size="lg">
 					<Plus className="h-5 w-5 mr-2" />
-					Create Topic
+					Submit Topic
 				</Button>
 			</SheetTrigger>
 			<SheetContent side="bottom" className="rounded-t-3xl">
@@ -155,10 +155,10 @@ export function CreateTopicSheet({
 							{isSubmitting ? (
 								<>
 									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-									Creating...
+									Submitting...
 								</>
 							) : (
-								"Create Topic"
+								"Submit Topic"
 							)}
 						</Button>
 					</div>
