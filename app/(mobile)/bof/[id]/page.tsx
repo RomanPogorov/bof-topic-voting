@@ -222,6 +222,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 										joiningTopicId={joiningTopicId}
 										onEdit={isOwnTopic ? handleEdit : undefined}
 										onDelete={isOwnTopic ? handleDelete : undefined}
+										currentUserId={participant?.id}
 									/>
 								);
 							})}

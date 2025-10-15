@@ -1,7 +1,7 @@
 "use client";
 
 import type { TopicDetails } from "@/lib/types";
-import { Loader2, Users } from "lucide-react";
+import { Loader2, Users, Pencil, Trash2, Check } from "lucide-react";
 
 interface TopicCardProps {
 	topic: TopicDetails;
@@ -13,6 +13,7 @@ interface TopicCardProps {
 	joiningTopicId?: string | null;
 	onEdit?: (topicId: string) => void;
 	onDelete?: (topicId: string) => void;
+	currentUserId?: string;
 }
 
 export function TopicCard({
@@ -24,6 +25,7 @@ export function TopicCard({
 	joiningTopicId,
 	onEdit,
 	onDelete,
+	currentUserId,
 }: TopicCardProps) {
 	const isThisTopicJoining = joiningTopicId === topic.topic_id;
 
@@ -35,140 +37,184 @@ export function TopicCard({
 	};
 
 	const joinedUsers = topic.joined_users || [];
-	const cannotJoin = disabled && !isOwnTopic;
+	const otherJoinedUsers = joinedUsers.filter(
+		(user) => user.id !== currentUserId,
+	);
+	const currentUserJoined = joinedUsers.some(
+		(user) => user.id === currentUserId,
+	);
 
-	return (
-		<div className="bg-white rounded-[16px] p-[16px] flex flex-col gap-[12px]">
-			{/* Header: Title + Edit/Delete buttons */}
-			<div className="flex items-start justify-between gap-2">
-				<div className="flex-1">
-					<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
-						{topic.title}
-					</h3>
-				</div>
-				{isOwnTopic && onEdit && onDelete && (
-					<div className="flex gap-1">
+	// Lead карточка (твой топик)
+	if (isOwnTopic) {
+		return (
+			<div className="bg-white border-2 border-[#2378e1] rounded-[16px] p-[16px] flex flex-col gap-[12px]">
+				{/* Бейдж Lead + кнопки Edit/Delete */}
+				<div className="flex items-center gap-[12px]">
+					<div className="flex-1">
+						<div className="bg-[#2378e1] px-[10px] py-[4px] rounded-full h-[25px] inline-flex items-center">
+							<span className="font-normal text-[13px] leading-[16.5px] text-white">
+								Lead
+							</span>
+						</div>
+					</div>
+					{onEdit && (
 						<button
 							type="button"
 							onClick={(e) => {
 								e.stopPropagation();
 								onEdit(topic.topic_id);
 							}}
-							className="px-2 py-1 text-[12px] text-blue-600 hover:bg-blue-50 rounded"
+							className="bg-[#f5f5f6] flex items-center justify-center rounded-full size-[44px] hover:bg-[#e4e4e7] transition-colors"
 						>
-							Edit
+							<Pencil className="size-[16px] text-zinc-950" />
 						</button>
+					)}
+					{onDelete && (
 						<button
 							type="button"
 							onClick={(e) => {
 								e.stopPropagation();
 								onDelete(topic.topic_id);
 							}}
-							className="px-2 py-1 text-[12px] text-red-600 hover:bg-red-50 rounded"
+							className="bg-[#f6f5f5] flex items-center justify-center rounded-full size-[44px] hover:bg-[#e4e4e7] transition-colors"
 						>
-							Delete
+							<Trash2 className="size-[16px] text-zinc-950" />
 						</button>
+					)}
+				</div>
+
+				{/* Заголовок */}
+				<div className="flex flex-col gap-[8px]">
+					<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
+						{topic.title}
+					</h3>
+				</div>
+
+				{/* Описание */}
+				{topic.description && (
+					<div className="w-full">
+						<p className="font-normal text-[14px] leading-[20px] text-[#17171c]">
+							{topic.description}
+						</p>
+					</div>
+				)}
+
+				{/* Серая линия (только если есть joined пользователи) */}
+				{joinedUsers.length > 0 && (
+					<div className="w-full h-[1px] bg-zinc-200" />
+				)}
+
+				{/* Теги joined пользователей */}
+				{joinedUsers.length > 0 && (
+					<div className="flex flex-wrap gap-[8px]">
+						{joinedUsers.map((user) => (
+							<div
+								key={user.id}
+								className="bg-[#f5f5f6] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center"
+							>
+								<span className="font-normal text-[13px] leading-[16.5px] text-[#52525b]">
+									{user.name}
+								</span>
+							</div>
+						))}
 					</div>
 				)}
 			</div>
+		);
+	}
 
-			{/* Description */}
+	// Обычные карточки (когда ты Lead другого топика)
+	return (
+		<div
+			className={`bg-white rounded-[16px] p-[16px] flex flex-col gap-[12px] ${
+				isJoined ? "border-2 border-[#ea4a35]" : ""
+			}`}
+		>
+			{/* Автор */}
+			<div className="flex flex-col">
+				<span className="font-normal text-[13px] leading-[18px] text-zinc-500">
+					Author: {topic.author_name}
+				</span>
+			</div>
+
+			{/* Заголовок */}
+			<div className="flex flex-col gap-[8px]">
+				<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
+					{topic.title}
+				</h3>
+			</div>
+
+			{/* Описание */}
 			{topic.description && (
-				<div className="w-full overflow-clip">
+				<div className="w-full">
 					<p className="font-normal text-[14px] leading-[20px] text-[#17171c]">
 						{topic.description}
 					</p>
 				</div>
 			)}
 
-			{/* Author */}
-			<p className="font-normal text-[12px] leading-[18px] text-zinc-500">
-				by {topic.author_name}
-				{topic.author_company && ` (${topic.author_company})`}
-			</p>
+			{/* Серая линия (только если есть joined пользователи) */}
+			{joinedUsers.length > 0 && <div className="w-full h-[1px] bg-zinc-200" />}
 
-			{/* Joined users */}
+			{/* Теги joined пользователей */}
 			{joinedUsers.length > 0 && (
-				<div className="flex flex-wrap gap-2">
-					{joinedUsers.map((user) => (
+				<div className="flex flex-wrap gap-[8px]">
+					{otherJoinedUsers.map((user) => (
 						<div
 							key={user.id}
-							className="px-2 py-1 bg-[#f5f5f6] rounded-full text-[11px] text-zinc-600"
+							className="bg-[#f5f5f6] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center"
 						>
-							{user.name}
+							<span className="font-normal text-[13px] leading-[16.5px] text-[#52525b]">
+								{user.name}
+							</span>
 						</div>
 					))}
+					{currentUserJoined && (
+						<div className="bg-[#ea4a35] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center">
+							<span className="font-normal text-[13px] leading-[16.5px] text-white">
+								You
+							</span>
+						</div>
+					)}
 				</div>
 			)}
 
-			{/* Footer: Join Button */}
-			<div className="flex flex-col gap-2 w-full">
-				{cannotJoin && !isOwnTopic && (
-					<p className="text-[11px] text-zinc-500 text-center">
-						You're leading your own topic
-					</p>
-				)}
-				<div className="flex items-center justify-end w-full">
-					<button
-						type="button"
-						onClick={handleJoin}
-						disabled={disabled || isThisTopicJoining || isOwnTopic}
-						className={`h-[40px] rounded-[6px] flex items-center gap-[4px] px-[12px] overflow-clip shrink-0 transition-all ${
-							isOwnTopic
-								? "bg-blue-500 hover:bg-blue-500/90"
-								: isJoined
-									? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
-									: disabled
-										? "bg-gray-200 border border-gray-300 cursor-not-allowed"
-										: "bg-white hover:bg-white/90 border border-gray-300"
-						}`}
-					>
-						{isThisTopicJoining ? (
-							<Loader2 className="h-4 w-4 animate-spin" />
-						) : (
-							<>
-								<Users
-									className={`h-4 w-4 ${isOwnTopic || isJoined ? "text-white" : disabled ? "text-gray-400" : "text-zinc-900"}`}
-								/>
-								<span
-									className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
-										isOwnTopic || isJoined
-											? "text-white"
-											: disabled
-												? "text-gray-400"
-												: "text-zinc-900"
-									}`}
-								>
-									{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
-								</span>
-								<div
-									className={`flex items-center justify-center px-[6px] py-[2px] rounded-[24px] ${
-										isOwnTopic
-											? "bg-blue-600"
-											: isJoined
-												? "bg-[#d52c16]"
-												: disabled
-													? "bg-gray-300"
-													: "bg-[#efeff1]"
-									}`}
-								>
-									<span
-										className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
-											isOwnTopic || isJoined
-												? "text-white"
-												: disabled
-													? "text-gray-500"
-													: "text-zinc-900"
-										}`}
-									>
-										{topic.vote_count || 0}
-									</span>
-								</div>
-							</>
-						)}
-					</button>
+			{/* Кнопка Join/Joined */}
+			{isJoined ? (
+				<div className="h-[40px] w-full rounded-[6px] flex items-center justify-center gap-[4px] bg-[rgba(234,74,53,0.1)]">
+					<Users className="size-[16px] text-[#ea4a35]" />
+					<span className="font-semibold text-[12px] leading-[16px] text-[#ea4a35]">
+						You Joined
+					</span>
+					<Check className="size-[16px] text-[#ea4a35]" />
 				</div>
-			</div>
+			) : (
+				<button
+					type="button"
+					onClick={handleJoin}
+					disabled={disabled || isThisTopicJoining}
+					className={`h-[40px] w-full rounded-[6px] flex items-center justify-center gap-[4px] transition-all ${
+						disabled
+							? "bg-[#f5f5f6] cursor-not-allowed"
+							: "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
+					}`}
+				>
+					{isThisTopicJoining ? (
+						<Loader2 className="size-[16px] animate-spin text-white" />
+					) : (
+						<>
+							<Users
+								className={`size-[16px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
+							/>
+							<span
+								className={`font-medium text-[12px] leading-[16px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
+							>
+								Join
+							</span>
+						</>
+					)}
+				</button>
+			)}
 		</div>
 	);
 }
