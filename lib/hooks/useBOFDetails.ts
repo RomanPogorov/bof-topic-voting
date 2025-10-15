@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase/client";
-import { BOFSession, TopicDetails, Vote } from "../types";
+import type { BOFSession, TopicDetails, Vote } from "../types";
 import { subscribeToBOFUpdates } from "../supabase/realtime";
 
 export function useBOFDetails(bofId: string, participantId?: string) {
@@ -43,7 +43,7 @@ export function useBOFDetails(bofId: string, participantId?: string) {
             .select("*")
             .eq("bof_session_id", bofId)
             .eq("participant_id", participantId)
-            .single<Vote>();
+            .maybeSingle<Vote>();
 
           setUserVote(voteData);
         }
@@ -84,7 +84,7 @@ export function useBOFDetails(bofId: string, participantId?: string) {
           .select("*")
           .eq("bof_session_id", bofId)
           .eq("participant_id", participantId)
-          .single<Vote>();
+          .maybeSingle<Vote>();
 
         setUserVote(voteData);
       }
