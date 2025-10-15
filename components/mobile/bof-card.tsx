@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { BOFSession, TopicDetails } from "@/lib/types";
-import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils/formatters";
 import { TopicsService } from "@/lib/services/topics.service";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -27,31 +26,48 @@ function SimpleTopicRow({
 		topic.joined_users.some((v) => v.id === participantId);
 
 	return (
-		<div className="flex items-center gap-2 bg-[#f5f5f6] rounded-[6px] px-2 py-2">
-			<div className="flex-1 min-w-0">
-				<p className="text-[15px] leading-[16px] text-zinc-950 overflow-hidden text-ellipsis whitespace-nowrap [letter-spacing:-0.03em]">
-					{topic.title}
-				</p>
-				<p className="text-[12px] leading-[16px] text-zinc-500 mt-0.5">
-					by {topic.author_name}
-				</p>
+		<div className="flex items-center gap-[8px] bg-[#f5f5f6] rounded-[6px] p-[8px]">
+			<div className="flex-1 min-w-0 flex flex-col gap-[4px]">
+				<div className="overflow-hidden w-full">
+					<p className="text-[15px] leading-[16px] text-zinc-950 overflow-hidden text-ellipsis tracking-[-0.45px] whitespace-nowrap">
+						{topic.title}
+					</p>
+				</div>
+				<div className="w-full">
+					<p className="text-[12px] leading-[16px] text-[#909098]">
+						{topic.author_name}
+					</p>
+				</div>
 			</div>
-			<div className="flex items-center gap-1 shrink-0">
+			<div className="flex items-center gap-[4px] shrink-0">
 				{isOwnTopic ? (
-					<div className="px-3 py-1 rounded-full bg-blue-500 text-white text-[12px] font-medium">
-						Lead
+					<div className="bg-[#2378e1] flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
+						<span className="font-medium text-[12px] leading-[18px] text-white">
+							Lead
+						</span>
+						<Users className="size-[16px] text-white" />
+						<span className="font-medium text-[12px] leading-[16px] text-white">
+							{topic.vote_count || 0}
+						</span>
 					</div>
 				) : hasJoined ? (
-					<div className="px-3 py-1 rounded-full bg-[#ea4a35] text-white text-[12px] font-medium">
-						Joined
+					<div className="bg-[#ea4a35] flex gap-[4px] items-center px-[8px] py-[4px] rounded-[6px]">
+						<span className="font-medium text-[12px] leading-[18px] text-white">
+							Joined
+						</span>
+						<Users className="size-[16px] text-white" />
+						<span className="font-medium text-[12px] leading-[16px] text-white">
+							{topic.vote_count || 0}
+						</span>
 					</div>
-				) : null}
-				<div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#efeff1]">
-					<Users className="h-3 w-3 text-zinc-500" />
-					<span className="text-[12px] leading-[16px] font-medium text-zinc-900">
-						{topic.vote_count || 0}
-					</span>
-				</div>
+				) : (
+					<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
+						<Users className="size-[16px] text-[#17171c]" />
+						<span className="font-medium text-[12px] leading-[16px] text-[#17171c]">
+							{topic.vote_count || 0}
+						</span>
+					</div>
+				)}
 			</div>
 		</div>
 	);
@@ -88,15 +104,15 @@ export function BOFCard({ session }: BOFCardProps) {
 
 	return (
 		<Link href={ROUTES.BOF(session.id)}>
-			<Card className="rounded-[16px] shadow-none border-none hover:shadow-md transition-shadow cursor-pointer">
-				<CardContent className="pt-4 pb-4 px-4 flex flex-col gap-4">
+			<div className="bg-white rounded-[16px] flex flex-col cursor-pointer hover:shadow-md transition-shadow">
+				<div className="p-[16px] flex flex-col gap-[16px]">
 					{/* Header */}
-					<div className="flex items-center gap-4">
+					<div className="flex items-center gap-[16px]">
 						<h3 className="font-bold text-[20px] leading-[28px] text-zinc-950 flex-1">
 							{session.title}
 						</h3>
-						<div className="flex items-center gap-2 shrink-0">
-							<Clock className="h-4 w-4 text-zinc-500" />
+						<div className="flex items-center gap-[8px] shrink-0">
+							<Clock className="size-[16px] text-zinc-500" />
 							<span className="text-[14px] leading-[20px] font-normal text-zinc-500">
 								{formatDate(session.session_time, "p")}
 							</span>
@@ -104,27 +120,27 @@ export function BOFCard({ session }: BOFCardProps) {
 					</div>
 
 					{/* Topics List */}
-					<div className="flex flex-col gap-2">
-						{isLoading ? (
-							<div className="text-center py-4 text-zinc-500 text-[14px]">
-								Loading topics...
-							</div>
-						) : topics.length === 0 ? (
-							<div className="text-center py-4 text-zinc-500 text-[14px]">
-								No topics yet. Be the first to add one!
-							</div>
-						) : (
-							topics.map((topic) => (
+					{isLoading ? (
+						<div className="text-center py-[16px] text-zinc-500 text-[14px] leading-[21px]">
+							Loading topics...
+						</div>
+					) : topics.length === 0 ? (
+						<div className="text-center py-[16px] text-zinc-500 text-[14px] leading-[21px]">
+							No topics yet. Be the first to add one!
+						</div>
+					) : (
+						<div className="flex flex-col gap-[8px]">
+							{topics.map((topic) => (
 								<SimpleTopicRow
 									key={topic.topic_id}
 									topic={topic}
 									participantId={participant?.id || ""}
 								/>
-							))
-						)}
-					</div>
-				</CardContent>
-			</Card>
+							))}
+						</div>
+					)}
+				</div>
+			</div>
 		</Link>
 	);
 }

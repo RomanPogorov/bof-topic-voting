@@ -10,7 +10,7 @@ import { ErrorMessage } from "@/components/shared/error-message";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TopicCard } from "@/components/mobile/topic-card";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
-import { ArrowLeft, RefreshCw, Check } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { VotesService } from "@/lib/services/votes.service";
 import { TopicsService } from "@/lib/services/topics.service";
 import { toast } from "sonner";
@@ -157,16 +157,6 @@ export default function BOFPage({ params }: BOFPageProps) {
 
 			{/* Main content */}
 			<div className="flex flex-col gap-[16px] px-[16px] pt-[16px] w-full z-[1]">
-				{/* Create topic button */}
-				{canCreateTopic && (!hasCreatedTopic || isAdmin) && (
-					<CreateTopicSheet
-						bofId={id}
-						participantId={participant.id}
-						onTopicCreated={refresh}
-						disabled={hasCreatedTopic && !isAdmin}
-					/>
-				)}
-
 				{/* Topics section */}
 				{topics.length === 0 ? (
 					<EmptyState
@@ -191,19 +181,21 @@ export default function BOFPage({ params }: BOFPageProps) {
 				) : (
 					<>
 						{/* Topics header */}
-						<div className="flex items-center justify-between w-full">
-							<h2 className="font-semibold text-[18px] leading-[28px] text-zinc-950 whitespace-pre">
+						<div className="flex flex-col items-center w-full">
+							<h2 className="font-semibold text-[18px] leading-[28px] text-zinc-950 text-center">
 								Topics ({topics.length})
 							</h2>
-							{userVote && (
-								<div className="bg-[#ea4a35] flex gap-[4px] items-center justify-center px-[12px] py-[8px] rounded-[9999px]">
-									<Check className="h-4 w-4 text-white" />
-									<span className="font-medium text-[12px] leading-[16px] text-center text-white whitespace-pre">
-										You joined
-									</span>
-								</div>
-							)}
 						</div>
+
+						{/* Create topic button */}
+						{canCreateTopic && (!hasCreatedTopic || isAdmin) && (
+							<CreateTopicSheet
+								bofId={id}
+								participantId={participant.id}
+								onTopicCreated={refresh}
+								disabled={hasCreatedTopic && !isAdmin}
+							/>
+						)}
 
 						{/* Topics list */}
 						<div className="flex flex-col gap-[12px] w-full">

@@ -78,10 +78,16 @@ export function CreateTopicSheet({
 	return (
 		<Sheet open={open} onOpenChange={setOpen}>
 			<SheetTrigger asChild>
-				<Button className="w-full touch-target" disabled={disabled} size="lg">
-					<Plus className="h-5 w-5 mr-2" />
-					Submit Topic
-				</Button>
+				<button
+					type="button"
+					disabled={disabled}
+					className="bg-[#2378e1] w-full flex gap-[8px] items-center justify-center px-[16px] py-[8px] rounded-[6px] hover:bg-[#1e68c9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					<Plus className="size-[16px] text-[#f9f9f9]" />
+					<span className="font-medium text-[14px] leading-[20px] text-[#f9f9f9]">
+						Submit Topic
+					</span>
+				</button>
 			</SheetTrigger>
 			<SheetContent side="bottom" className="rounded-t-3xl">
 				<SheetHeader>
