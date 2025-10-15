@@ -11,10 +11,10 @@ import { TopicsService } from "@/lib/services/topics.service";
 import { VotesService } from "@/lib/services/votes.service";
 import { supabase } from "@/lib/supabase/client";
 import type { TopicDetails, Vote, BOFSession } from "@/lib/types";
-import { ThumbsUp, AlertCircle } from "lucide-react";
+import { AlertCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
-import { formatTimeAgo, formatBOFSessionInfo } from "@/lib/utils/formatters";
+import { formatBOFSessionInfo } from "@/lib/utils/formatters";
 
 export default function MyTopicsPage() {
 	const { participant } = useAuth();
@@ -114,7 +114,7 @@ export default function MyTopicsPage() {
 					</div>
 					<div className="w-full flex flex-col items-center">
 						<p className="font-normal text-[16px] leading-[20px] text-center text-zinc-500 w-full">
-							Your topics and votes
+							Your topics and joined sessions
 						</p>
 					</div>
 				</div>
@@ -147,7 +147,7 @@ export default function MyTopicsPage() {
 								</div>
 								<div className="w-[107px] flex flex-col items-center">
 									<p className="font-normal text-[12px] leading-[16px] text-center text-zinc-500 whitespace-pre">
-										My Votes
+										Topics Joined
 									</p>
 								</div>
 							</div>
@@ -159,7 +159,7 @@ export default function MyTopicsPage() {
 					<EmptyState
 						icon="🎯"
 						title="No activity yet"
-						description="Start by creating a topic or voting in a BOF session"
+						description="Start by creating a topic or joining a BOF session"
 					/>
 				) : (
 					<>
@@ -181,84 +181,17 @@ export default function MyTopicsPage() {
 											<div className="bg-white rounded-[16px] p-[16px] overflow-clip w-full">
 												<div className="flex flex-col gap-[8px] w-full">
 													{/* Title and session info */}
-													<div className="flex flex-col gap-[8px] w-full">
-														<div className="w-full flex flex-col">
-															<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950 w-full">
-																{topic.title}
-															</h3>
-															{session && (
-																<p className="font-normal text-[14px] leading-[20px] text-zinc-500 w-full">
-																	{formatBOFSessionInfo(
-																		session.session_time,
-																		session.session_number,
-																	)}
-																</p>
-															)}
-														</div>
-													</div>
-
-													{/* Description */}
-													{topic.description && (
-														<div className="w-full overflow-clip flex flex-col">
-															<p className="font-normal text-[14px] leading-[20px] text-[#17171c] w-full">
-																{topic.description}
-															</p>
-														</div>
-													)}
-
-													{/* Footer */}
-													<div className="flex items-center justify-between w-full">
-														<div className="flex gap-[8px] items-center">
-															<ThumbsUp className="h-4 w-4 text-zinc-500" />
-															<p className="font-medium text-[14px] leading-[20px] text-zinc-500 whitespace-pre">
-																{topic.vote_count}
-															</p>
-														</div>
-														<p className="font-normal text-[12px] leading-[16px] text-zinc-500 whitespace-pre">
-															{formatTimeAgo(topic.created_at)}
-														</p>
-													</div>
-												</div>
-											</div>
-										</Link>
-									);
-								})}
-							</div>
-						)}
-
-						{/* My Votes */}
-						{myVotes.length > 0 && (
-							<div className="flex flex-col gap-[8px] w-full">
-								<div className="w-full flex flex-col">
-									<h2 className="font-semibold text-[18px] leading-[28px] text-zinc-950 w-full">
-										My Votes
-									</h2>
-								</div>
-								{votedTopics.map((topic) => {
-									const session = sessions.get(topic.bof_session_id);
-									return (
-										<Link
-											key={topic.topic_id}
-											href={ROUTES.BOF(topic.bof_session_id)}
-										>
-											<div className="bg-white rounded-[16px] p-[16px] overflow-clip w-full">
-												<div className="flex flex-col gap-[8px] w-full">
-													{/* Title and session info */}
-													<div className="flex flex-col gap-[4px] w-full">
-														<div className="w-full flex flex-col">
-															<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950 w-full">
-																{topic.title}
-															</h3>
-														</div>
+													<div className="flex items-center justify-between gap-[8px] w-full">
+														<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
+															{topic.title}
+														</h3>
 														{session && (
-															<div className="w-full overflow-clip flex flex-col">
-																<p className="font-normal text-[14px] leading-[20px] text-zinc-500 w-full">
-																	{formatBOFSessionInfo(
-																		session.session_time,
-																		session.session_number,
-																	)}
-																</p>
-															</div>
+															<p className="font-normal text-[14px] leading-[20px] text-zinc-500 whitespace-nowrap shrink-0">
+																{formatBOFSessionInfo(
+																	session.session_time,
+																	session.session_number,
+																)}
+															</p>
 														)}
 													</div>
 
@@ -272,16 +205,76 @@ export default function MyTopicsPage() {
 													)}
 
 													{/* Footer */}
-													<div className="flex items-center justify-between w-full">
-														<div className="flex-1 flex flex-col min-w-0">
-															<p className="font-normal text-[12px] leading-[16px] text-zinc-500 whitespace-pre">
-																by {topic.author_name}
+													<div className="flex items-center w-full">
+														<div className="flex gap-[8px] items-center">
+															<Users className="h-4 w-4 text-zinc-500" />
+															<p className="font-medium text-[14px] leading-[20px] text-zinc-500 whitespace-pre">
+																{topic.joined_users?.length || 0} joined
 															</p>
 														</div>
-														<div className="flex gap-[8px] items-center shrink-0">
-															<ThumbsUp className="h-4 w-4 text-zinc-500" />
+													</div>
+												</div>
+											</div>
+										</Link>
+									);
+								})}
+							</div>
+						)}
+
+						{/* Topics I Joined */}
+						{myVotes.length > 0 && (
+							<div className="flex flex-col gap-[8px] w-full">
+								<div className="w-full flex flex-col">
+									<h2 className="font-semibold text-[18px] leading-[28px] text-zinc-950 w-full">
+										Topics I Joined
+									</h2>
+								</div>
+								{votedTopics.map((topic) => {
+									const session = sessions.get(topic.bof_session_id);
+									return (
+										<Link
+											key={topic.topic_id}
+											href={ROUTES.BOF(topic.bof_session_id)}
+										>
+											<div className="bg-white rounded-[16px] p-[16px] overflow-clip w-full">
+												<div className="flex flex-col gap-[8px] w-full">
+													{/* Author and Session Info */}
+													<div className="flex items-center justify-between w-full">
+														<span className="font-normal text-[13px] leading-[18px] text-zinc-500">
+															Author: {topic.author_name}
+														</span>
+														{session && (
+															<p className="font-normal text-[14px] leading-[20px] text-zinc-500">
+																{formatBOFSessionInfo(
+																	session.session_time,
+																	session.session_number,
+																)}
+															</p>
+														)}
+													</div>
+
+													{/* Title */}
+													<div className="w-full flex flex-col">
+														<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950 w-full">
+															{topic.title}
+														</h3>
+													</div>
+
+													{/* Description */}
+													{topic.description && (
+														<div className="w-full overflow-clip flex flex-col">
+															<p className="font-normal text-[14px] leading-[20px] text-[#17171c] w-full">
+																{topic.description}
+															</p>
+														</div>
+													)}
+
+													{/* Footer */}
+													<div className="flex items-center w-full">
+														<div className="flex gap-[8px] items-center">
+															<Users className="h-4 w-4 text-zinc-500" />
 															<p className="font-medium text-[14px] leading-[20px] text-zinc-500 whitespace-pre">
-																{topic.vote_count}
+																{topic.joined_users?.length || 0} joined
 															</p>
 														</div>
 													</div>
