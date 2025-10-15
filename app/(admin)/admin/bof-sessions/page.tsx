@@ -10,7 +10,7 @@ import { Plus, RefreshCw } from "lucide-react";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { toast } from "sonner";
-import type { Topic } from "@/lib/types";
+import type { TopicDetails } from "@/lib/types";
 import { AdminTopicList } from "@/components/admin/admin-topic-list";
 
 interface BOFSessionRow {
@@ -19,7 +19,7 @@ interface BOFSessionRow {
 	session_number: number;
 	title: string;
 	description?: string;
-	topics: Topic[];
+	topics: TopicDetails[];
 }
 
 export default function AdminBOFSessionsPage() {
@@ -27,12 +27,31 @@ export default function AdminBOFSessionsPage() {
 	const { participant } = useAuth();
 
 	const load = useCallback(async () => {
-		const { data } = await supabase
+		// Fetch sessions first
+		const { data: sessionsData } = await supabase
 			.from("bof_sessions")
-			.select("id, day_number, session_number, title, description, topics(*)")
+			.select("id, day_number, session_number, title, description")
 			.order("day_number")
 			.order("session_number");
-		setSessions(data || []);
+
+		if (!sessionsData) {
+			setSessions([]);
+			return;
+		}
+
+		// Fetch topic details for all sessions
+		const { data: topicsData } = await supabase
+			.from("topic_details")
+			.select("*")
+			.order("created_at", { ascending: false });
+
+		// Group topics by session
+		const sessionsWithTopics = sessionsData.map((session) => ({
+			...session,
+			topics: topicsData?.filter((t) => t.bof_session_id === session.id) || [],
+		}));
+
+		setSessions(sessionsWithTopics);
 	}, []);
 
 	useEffect(() => {

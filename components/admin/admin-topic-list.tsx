@@ -1,8 +1,8 @@
 "use client";
 
-import type { Topic } from "@/lib/types";
+import type { TopicDetails } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -19,7 +19,7 @@ import {
 import { TopicsService } from "@/lib/services/topics.service";
 
 interface AdminTopicListProps {
-	topics: Topic[];
+	topics: TopicDetails[];
 	onTopicDeleted: () => void;
 }
 
@@ -55,17 +55,28 @@ export function AdminTopicList({
 			<div className="space-y-2">
 				{topics.map((topic) => (
 					<div
-						key={topic.id}
-						className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+						key={topic.topic_id}
+						className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
 					>
-						<span className="text-sm">{topic.title}</span>
+						<div className="flex-1 min-w-0">
+							<div className="text-sm font-medium">{topic.title}</div>
+							<div className="flex items-center gap-3 mt-1">
+								<span className="text-xs text-gray-500">
+									by {topic.author_name}
+								</span>
+								<div className="flex items-center gap-1 text-xs text-gray-500">
+									<ThumbsUp className="h-3 w-3" />
+									<span>{topic.vote_count}</span>
+								</div>
+							</div>
+						</div>
 
 						<AlertDialog>
 							<AlertDialogTrigger asChild>
 								<Button
 									variant="ghost"
 									size="icon"
-									className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+									className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 shrink-0"
 									disabled={!!isDeleting}
 								>
 									<Trash2 className="h-4 w-4" />
@@ -82,10 +93,10 @@ export function AdminTopicList({
 								<AlertDialogFooter>
 									<AlertDialogCancel>Cancel</AlertDialogCancel>
 									<AlertDialogAction
-										onClick={() => handleDelete(topic.id)}
+										onClick={() => handleDelete(topic.topic_id)}
 										className="bg-destructive hover:bg-destructive/90"
 									>
-										{isDeleting === topic.id ? (
+										{isDeleting === topic.topic_id ? (
 											<Loader2 className="h-4 w-4 animate-spin" />
 										) : (
 											"Delete"
