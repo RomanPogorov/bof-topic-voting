@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils/formatters";
 import { TopicsService } from "@/lib/services/topics.service";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { Calendar, Clock, ThumbsUp, Check, Loader2 } from "lucide-react";
+import { Clock, ThumbsUp, Check, Loader2 } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { VotesService } from "@/lib/services/votes.service";
 
@@ -26,11 +26,10 @@ function SimpleTopicRow({
 	onVoteChange: () => void;
 }) {
 	const [isVoting, setIsVoting] = useState(false);
-	// Defensive check: ensure topic.voters is an array before calling .some()
 	const hasVoted =
 		Array.isArray(topic.voters) &&
 		topic.voters.some((v) => v.id === participantId);
-	
+
 	const isOwnTopic = topic.author_id === participantId;
 
 	const handleVote = async () => {
@@ -44,37 +43,35 @@ function SimpleTopicRow({
 			onVoteChange();
 		} catch (error) {
 			console.error("Error voting:", error);
-			// Optionally show an error state
 		} finally {
 			setIsVoting(false);
 		}
 	};
 
 	return (
-		<div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
-			<p className="font-medium text-sm">{topic.title}</p>
+		<div className="flex items-center gap-2 bg-[#f5f5f6] h-[40px] rounded-[6px] pl-4 pr-2 py-px">
+			<p className="font-medium text-[15px] leading-[16px] text-zinc-950 flex-1">
+				{topic.title}
+			</p>
 			<Button
-				size="sm"
-				variant={hasVoted ? "secondary" : "outline"}
 				onClick={handleVote}
 				disabled={isVoting || isOwnTopic}
-				className={`transition-all text-xs h-8 px-3 ${
-					hasVoted ? "bg-green-600 text-white hover:bg-green-700" : 
-					isOwnTopic ? "bg-gray-100 text-gray-500 border-gray-200" : "bg-white"
+				className={`h-[32px] w-[78px] px-3 rounded-[6px] text-[12px] font-medium leading-[16px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] flex items-center justify-center gap-1 ${
+					hasVoted
+						? "bg-[#ea4a35] hover:bg-[#ea4a35]/90 text-white"
+						: "bg-white hover:bg-white/90 text-zinc-900"
 				}`}
 			>
 				{isVoting ? (
 					<Loader2 className="h-4 w-4 animate-spin" />
 				) : hasVoted ? (
 					<>
-						<Check className="h-4 w-4 mr-1" />
+						<Check className="h-4 w-4" />
 						Voted
 					</>
-				) : isOwnTopic ? (
-					"Your Topic"
 				) : (
 					<>
-						<ThumbsUp className="h-4 w-4 mr-1" />
+						<ThumbsUp className="h-4 w-4" />
 						Vote
 					</>
 				)}
@@ -93,7 +90,6 @@ export function BOFCard({ session }: BOFCardProps) {
 			setIsLoading(true);
 			try {
 				const topicsData = await TopicsService.getTopics(session.id);
-				// Sort by vote_count descending, then created_at ascending
 				const sortedTopics = topicsData.sort((a, b) => {
 					if (b.vote_count !== a.vote_count) {
 						return b.vote_count - a.vote_count;
@@ -114,7 +110,6 @@ export function BOFCard({ session }: BOFCardProps) {
 	}, [session.id]);
 
 	const handleVoteChange = () => {
-		// Re-fetch topics to update vote counts and voted status
 		TopicsService.getTopics(session.id).then((topicsData) => {
 			const sortedTopics = topicsData.sort((a, b) => {
 				if (b.vote_count !== a.vote_count) {
@@ -128,24 +123,33 @@ export function BOFCard({ session }: BOFCardProps) {
 		});
 	};
 
-	const topicsToShow = topics.slice(0, 4);
+	const topicsToShow = topics.slice(0, 5);
 
 	return (
-		<Card className="transition-all hover:shadow-lg">
-			<CardContent className="p-4 space-y-4">
+		<Card className="rounded-[16px] shadow-none border-none">
+			<CardContent className="pt-6 pb-8 px-6 flex flex-col gap-4">
 				{/* Header */}
-				<div className="flex items-center justify-between">
-					<h3 className="font-bold text-lg">{session.title}</h3>
-					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<Calendar className="h-4 w-4" />
-						<span>{formatDate(session.session_time, "MMM d")}</span>
-						<Clock className="h-4 w-4" />
-						<span>{formatDate(session.session_time, "p")}</span>
+				<div className="flex items-center gap-4">
+					<h3 className="font-bold text-[20px] leading-[28px] text-zinc-950 flex-1">
+						{session.title}
+					</h3>
+					<div className="flex items-center gap-2">
+						<Clock className="h-4 w-4 text-zinc-500" />
+						<span className="text-[14px] leading-[20px] font-normal text-zinc-500">
+							{formatDate(session.session_time, "p")}
+						</span>
 					</div>
 				</div>
 
+				{/* Vote for topic heading */}
+				<div className="flex items-center justify-center">
+					<h4 className="text-[16px] leading-[22.5px] text-zinc-950">
+						Vote for topic
+					</h4>
+				</div>
+
 				{/* Topics List */}
-				<div className="space-y-2">
+				<div className="flex flex-col gap-2">
 					{isLoading ? (
 						<div className="text-center py-4 text-muted-foreground">
 							Loading topics...
@@ -166,15 +170,25 @@ export function BOFCard({ session }: BOFCardProps) {
 					)}
 				</div>
 
-				{/* Footer */}
-				<Link href={ROUTES.BOF(session.id)} className="w-full">
-					<Button
-						variant="secondary"
-						className="w-full bg-gray-800 text-white hover:bg-gray-900"
-					>
-						Show All Topics ({topics.length})
-					</Button>
-				</Link>
+				{/* Footer Buttons */}
+				<div className="flex gap-2">
+					<Link href={ROUTES.BOF(session.id)}>
+						<Button
+							variant="outline"
+							className="h-[40px] w-[124px] rounded-[6px] border-2 border-neutral-500 text-neutral-500 font-medium text-[14px] leading-[16px] bg-white hover:bg-white/90"
+						>
+							Show All ({topics.length})
+						</Button>
+					</Link>
+					<Link href={ROUTES.BOF(session.id)} className="flex-1">
+						<Button
+							variant="outline"
+							className="h-[40px] w-full rounded-[6px] border-2 border-[#ea4a35] text-[#ea4a35] font-medium text-[14px] leading-[16px] bg-white hover:bg-white/90"
+						>
+							See Details
+						</Button>
+					</Link>
+				</div>
 			</CardContent>
 		</Card>
 	);

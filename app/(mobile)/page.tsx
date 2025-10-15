@@ -8,8 +8,8 @@ import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ErrorMessage } from "@/components/shared/error-message";
 import { BOFCard } from "@/components/mobile/bof-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { formatDate } from "@/lib/utils/formatters";
+import Image from "next/image";
 
 export default function HomePage() {
 	const { participant, isLoading: authLoading } = useAuth();
@@ -27,74 +27,77 @@ export default function HomePage() {
 		);
 	}
 
-	// Group sessions by day
-	const sessionsByDay = sessions.reduce(
+	// Group sessions by date
+	const sessionsByDate = sessions.reduce(
 		(acc, session) => {
-			if (!acc[session.day_number]) {
-				acc[session.day_number] = [];
+			const dateKey = formatDate(session.session_time, "MMM, d");
+			if (!acc[dateKey]) {
+				acc[dateKey] = [];
 			}
-			acc[session.day_number].push(session);
+			acc[dateKey].push(session);
 			return acc;
 		},
-		{} as Record<number, typeof sessions>,
+		{} as Record<string, typeof sessions>,
 	);
 
 	return (
-		<div className="p-4 space-y-6 safe-top">
-			{/* Header */}
-			<div className="space-y-4">
-				<div className="flex items-center justify-between">
-					<div>
-						<h1 className="text-3xl font-bold">BOF Sessions</h1>
-						<p className="text-muted-foreground">Birds of a Feather Voting</p>
+		<div className="bg-[#f5f5f6] min-h-screen pb-4 px-4">
+			<div className="flex flex-col gap-6">
+				{/* Header */}
+				<div className="flex items-center pb-4 pt-12">
+					<div className="flex-1 flex flex-col">
+						<h1 className="font-bold text-[30px] leading-[36px] text-zinc-950">
+							BOF Sessions
+						</h1>
+						<p className="font-medium text-[16px] leading-[24px] text-[#ea4a35]">
+							by Health Samurai
+						</p>
 					</div>
-					{participant && (
-						<Badge
-							variant="outline"
-							className="gap-1 bg-primary/5 border-primary/20"
-						>
-							<Sparkles className="h-3 w-3" />
-							Welcome
-						</Badge>
-					)}
+					<div className="w-[60px] h-[60px] relative shrink-0">
+						<Image
+							src="/hs-logo.svg"
+							alt="Health Samurai"
+							width={60}
+							height={60}
+							className="w-full h-full"
+						/>
+					</div>
 				</div>
 
+				{/* Welcome Card */}
 				{participant && (
-					<Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-						<CardContent className="p-4">
-							<p className="font-medium">👋 Hi, {participant.name}!</p>
-							<p className="text-sm text-muted-foreground mt-1">
-								{participant.company
-									? `from ${participant.company}`
-									: "Ready to vote?"}
+					<Card className="bg-white rounded-[16px] shadow-none border-none">
+						<CardContent className="px-4 py-2 flex flex-col gap-1 text-center">
+							<p className="font-medium text-[20px] leading-[24px] text-zinc-950">
+								Hi and welcome,{" "}
+								<span className="font-bold text-zinc-900">
+									{participant.name}!
+								</span>
+							</p>
+							<p className="font-normal text-[16px] leading-[20px] text-zinc-500">
+								It's time to vote!
 							</p>
 						</CardContent>
 					</Card>
 				)}
 			</div>
 
-			{/* BOF Sessions by Day */}
-			<div className="space-y-8">
-				{[1, 2, 3].map((day) => (
-					<div key={day} className="space-y-4">
-						<div className="flex items-center gap-3">
-							<div className="h-8 w-8 rounded-full bg-gray-900 text-white flex items-center justify-center font-bold text-sm">
-								{day}
+			{/* BOF Sessions by Date */}
+			<div className="pt-4 flex flex-col gap-8">
+				{Object.entries(sessionsByDate).map(([date, dateSessions]) => (
+					<div key={date} className="flex flex-col gap-4">
+						<div className="flex items-center justify-center">
+							<div className="bg-zinc-900 rounded-full px-3 py-2">
+								<p className="font-bold text-[19px] leading-[20px] text-neutral-50">
+									{date}
+								</p>
 							</div>
-							<h2 className="text-xl font-bold">Day {day}</h2>
 						</div>
 
-						<div className="space-y-3">
-							{sessionsByDay[day]?.map((session) => (
+						<div className="flex flex-col gap-8">
+							{dateSessions.map((session) => (
 								<BOFCard key={session.id} session={session} />
 							))}
-							{!sessionsByDay[day] && (
-								<Card className="border-dashed">
-									<CardContent className="p-8 text-center text-muted-foreground">
-										No sessions scheduled
-									</CardContent>
-								</Card>
-							)}
 						</div>
 					</div>
 				))}
