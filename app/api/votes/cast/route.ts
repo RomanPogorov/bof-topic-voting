@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { ErrorCodes } from "@/lib/types";
+import { ErrorCodes, type Vote } from "@/lib/types";
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Check if voting for own topic
+    // 1. Check if joining own topic (can't join your own topic - you're leading it)
     const { data: topic } = await supabaseAdmin
       .from("topics")
       .select("participant_id")
@@ -22,12 +22,12 @@ export async function POST(request: Request) {
 
     if (topic && topic.participant_id === participantId) {
       return NextResponse.json(
-        { error: ErrorCodes.CANNOT_VOTE_OWN_TOPIC },
+        { error: ErrorCodes.CANNOT_JOIN_OWN_TOPIC },
         { status: 400 }
       );
     }
 
-    // 2. Check if user already voted in this BOF
+    // 2. Check if user already joined a topic in this BOF
     const { data: existingVote } = await supabaseAdmin
       .from("votes")
       .select("*")
@@ -35,9 +35,9 @@ export async function POST(request: Request) {
       .eq("participant_id", participantId)
       .single();
 
-    let vote;
+    let vote: Vote;
 
-    // 3. If voted, update to new topic
+    // 3. If already joined, update to new topic
     if (existingVote) {
       const { data, error } = await supabaseAdmin
         .from("votes")
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
       vote = data;
     } else {
-      // 4. Otherwise, create new vote
+      // 4. Otherwise, create new join
       const { data, error } = await supabaseAdmin
         .from("votes")
         .insert({
@@ -80,10 +80,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ vote }, { status: 200 });
-  } catch (error: any) {
-    console.error("Error casting vote:", error);
+  } catch (error: unknown) {
+    console.error("Error joining topic:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to cast vote" },
+      { error: (error as Error).message || "Failed to join topic" },
       { status: 500 }
     );
   }

@@ -80,7 +80,7 @@ export interface AnalyticsEvent {
   id: string;
   participant_id?: string;
   event_type: string;
-  event_data?: Record<string, any>;
+  event_data?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -100,7 +100,14 @@ export interface TopicDetails {
   author_company?: string;
   author_avatar?: string;
   vote_count: number;
+  joined_count: number;
   voters: Array<{
+    id: string;
+    name: string;
+    company?: string;
+    avatar?: string;
+  }>;
+  joined_users: Array<{
     id: string;
     name: string;
     company?: string;
@@ -139,11 +146,11 @@ export enum UIState {
   EMPTY = "empty",
 }
 
-export enum VoteState {
-  NOT_VOTED = "not_voted",
-  VOTED = "voted",
-  VOTING = "voting",
-  CHANGING_VOTE = "changing_vote",
+export enum JoinState {
+  NOT_JOINED = "not_joined",
+  JOINED = "joined",
+  LEAD = "lead",
+  JOINING = "joining",
   ERROR = "error",
 }
 
@@ -169,10 +176,10 @@ export const ErrorCodes = {
   SESSION_EXPIRED: "SESSION_EXPIRED",
   BLOCKED_USER: "BLOCKED_USER",
 
-  // Voting errors
-  ALREADY_VOTED: "ALREADY_VOTED",
-  VOTING_CLOSED: "VOTING_CLOSED",
-  CANNOT_VOTE_OWN_TOPIC: "CANNOT_VOTE_OWN_TOPIC",
+  // Join errors
+  ALREADY_JOINED: "ALREADY_JOINED",
+  JOINING_CLOSED: "JOINING_CLOSED",
+  CANNOT_JOIN_OWN_TOPIC: "CANNOT_JOIN_OWN_TOPIC",
 
   // Topic errors
   ALREADY_CREATED_TOPIC: "ALREADY_CREATED_TOPIC",
@@ -200,6 +207,11 @@ export interface CreateTopicRequest {
 }
 
 export interface CastVoteRequest {
+  topic_id: string;
+  bof_session_id: string;
+}
+
+export interface JoinTopicRequest {
   topic_id: string;
   bof_session_id: string;
 }

@@ -51,8 +51,7 @@ export default function TVDisplayPage() {
 					.select("*")
 					.eq("bof_session_id", sessionId)
 					.eq("is_hidden", false)
-					.order("vote_count", { ascending: false })
-					.limit(10);
+					.order("vote_count", { ascending: false });
 
 				if (error) throw error;
 				setTopics(data || []);
@@ -256,24 +255,29 @@ export default function TVDisplayPage() {
 				</div>
 			</div>
 
-			{/* Main Content Grid */}
-			<div className="grid grid-cols-3 gap-8">
-				{/* Topics - 2 columns */}
-				<div className="col-span-2 space-y-4">
-					<div className="mb-6 flex items-center justify-between">
-						<h2 className="text-3xl font-bold text-white">Top Topics</h2>
-						<div className="text-sm text-slate-400">
-							Updated {lastUpdate.toLocaleTimeString()}
-						</div>
+			{/* Main Content */}
+			<div className="space-y-4">
+				<div className="mb-6 flex items-center justify-between">
+					<h2 className="text-3xl font-bold text-white">All Topics</h2>
+					<div className="text-sm text-slate-400">
+						Updated {lastUpdate.toLocaleTimeString()}
 					</div>
+				</div>
 
-					{topics.length === 0 ? (
-						<div className="rounded-xl bg-slate-800/50 p-12 text-center backdrop-blur-sm">
-							<p className="text-xl text-slate-400">
-								No topics yet. Be the first to submit!
-							</p>
+				{topics.length === 0 ? (
+					<div className="rounded-xl bg-slate-800/50 p-12 text-center backdrop-blur-sm">
+						<p className="text-xl text-slate-400">
+							No topics yet. Be the first to submit!
+						</p>
+					</div>
+				) : (
+					<>
+						<div className="mb-4 text-lg text-slate-300">
+							<span className="font-semibold text-yellow-400">
+								Top 5 topics
+							</span>{" "}
+							will be discussed
 						</div>
-					) : (
 						<div className="space-y-4">
 							<AnimatePresence mode="popLayout">
 								{topics.map((topic, index) => (
@@ -286,29 +290,8 @@ export default function TVDisplayPage() {
 								))}
 							</AnimatePresence>
 						</div>
-					)}
-				</div>
-
-				{/* Leaderboard - 1 column */}
-				<div className="space-y-4">
-					<h2 className="text-3xl font-bold text-white mb-6">🏆 Leaderboard</h2>
-
-					{leaderboard.length === 0 ? (
-						<div className="rounded-xl bg-slate-800/50 p-8 text-center backdrop-blur-sm">
-							<p className="text-slate-400">No participants yet</p>
-						</div>
-					) : (
-						<div className="space-y-3">
-							{leaderboard.map((participant, index) => (
-								<LeaderboardCard
-									key={participant.id}
-									participant={participant}
-									rank={index + 1}
-								/>
-							))}
-						</div>
-					)}
-				</div>
+					</>
+				)}
 			</div>
 
 			{/* Footer */}

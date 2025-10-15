@@ -1,42 +1,74 @@
 "use client";
 
 import type { TopicDetails } from "@/lib/types";
-import { ThumbsUp, Loader2 } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 
 interface TopicCardProps {
 	topic: TopicDetails;
-	isVoted: boolean;
-	onVote: (topicId: string) => Promise<void>;
-	isVoting: boolean;
+	isJoined: boolean;
+	onJoin: (topicId: string) => Promise<void>;
+	isJoining: boolean;
 	disabled?: boolean;
 	isOwnTopic?: boolean;
-	votingTopicId?: string | null;
+	joiningTopicId?: string | null;
+	onEdit?: (topicId: string) => void;
+	onDelete?: (topicId: string) => void;
 }
 
 export function TopicCard({
 	topic,
-	isVoted,
-	onVote,
+	isJoined,
+	onJoin,
 	disabled,
 	isOwnTopic,
-	votingTopicId,
+	joiningTopicId,
+	onEdit,
+	onDelete,
 }: TopicCardProps) {
-	const isThisTopicVoting = votingTopicId === topic.topic_id;
+	const isThisTopicJoining = joiningTopicId === topic.topic_id;
 
-	const handleVote = async (e: React.MouseEvent) => {
+	const handleJoin = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (!disabled && !isOwnTopic) {
-			await onVote(topic.topic_id);
+			await onJoin(topic.topic_id);
 		}
 	};
 
+	const joinedUsers = topic.joined_users || [];
+
 	return (
-		<div className="bg-white rounded-[16px] p-[16px] flex flex-col gap-[8px]">
-			{/* Title */}
-			<div className="w-full">
-				<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
-					{topic.title}
-				</h3>
+		<div className="bg-white rounded-[16px] p-[16px] flex flex-col gap-[12px]">
+			{/* Header: Title + Edit/Delete buttons */}
+			<div className="flex items-start justify-between gap-2">
+				<div className="flex-1">
+					<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
+						{topic.title}
+					</h3>
+				</div>
+				{isOwnTopic && onEdit && onDelete && (
+					<div className="flex gap-1">
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								onEdit(topic.topic_id);
+							}}
+							className="px-2 py-1 text-[12px] text-blue-600 hover:bg-blue-50 rounded"
+						>
+							Edit
+						</button>
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								onDelete(topic.topic_id);
+							}}
+							className="px-2 py-1 text-[12px] text-red-600 hover:bg-red-50 rounded"
+						>
+							Delete
+						</button>
+					</div>
+				)}
 			</div>
 
 			{/* Description */}
@@ -48,53 +80,69 @@ export function TopicCard({
 				</div>
 			)}
 
-			{/* Footer: Author + Vote Button */}
-			<div className="flex items-end justify-between w-full">
-				{/* Author */}
-				<p className="font-normal text-[12px] leading-[20px] text-zinc-500 whitespace-pre">
-					{isOwnTopic ? "Your Topic" : `Author: ${topic.author_name}`}
-				</p>
+			{/* Author */}
+			<p className="font-normal text-[12px] leading-[18px] text-zinc-500">
+				by {topic.author_name}
+				{topic.author_company && ` (${topic.author_company})`}
+			</p>
 
-				{/* Vote Button */}
+			{/* Joined users */}
+			{joinedUsers.length > 0 && (
+				<div className="flex flex-wrap gap-2">
+					{joinedUsers.map((user) => (
+						<div
+							key={user.id}
+							className="px-2 py-1 bg-[#f5f5f6] rounded-full text-[11px] text-zinc-600"
+						>
+							{user.name}
+						</div>
+					))}
+				</div>
+			)}
+
+			{/* Footer: Join Button */}
+			<div className="flex items-center justify-end w-full">
 				<button
 					type="button"
-					onClick={handleVote}
-					disabled={disabled || isThisTopicVoting || isOwnTopic}
+					onClick={handleJoin}
+					disabled={disabled || isThisTopicJoining || isOwnTopic}
 					className={`h-[40px] rounded-[6px] flex items-center gap-[4px] px-[12px] overflow-clip shrink-0 transition-all ${
-						isVoted
-							? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
-							: isOwnTopic
-								? "bg-white hover:bg-white/90"
+						isOwnTopic
+							? "bg-blue-500 hover:bg-blue-500/90"
+							: isJoined
+								? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
 								: "bg-white hover:bg-white/90 border border-gray-300"
 					}`}
 				>
-					{isThisTopicVoting ? (
+					{isThisTopicJoining ? (
 						<Loader2 className="h-4 w-4 animate-spin" />
 					) : (
 						<>
-							<ThumbsUp
-								className={`h-4 w-4 ${isVoted ? "text-white fill-white" : "text-zinc-900"}`}
+							<Users
+								className={`h-4 w-4 ${isOwnTopic || isJoined ? "text-white" : "text-zinc-900"}`}
 							/>
-							{!isOwnTopic && (
-								<span
-									className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
-										isVoted ? "text-white" : "text-zinc-900"
-									}`}
-								>
-									{isVoted ? "Voted" : "Vote"}
-								</span>
-							)}
+							<span
+								className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
+									isOwnTopic || isJoined ? "text-white" : "text-zinc-900"
+								}`}
+							>
+								{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
+							</span>
 							<div
 								className={`flex items-center justify-center px-[6px] py-[2px] rounded-[24px] ${
-									isVoted ? "bg-[#d52c16]" : "bg-[#efeff1]"
+									isOwnTopic
+										? "bg-blue-600"
+										: isJoined
+											? "bg-[#d52c16]"
+											: "bg-[#efeff1]"
 								}`}
 							>
 								<span
 									className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
-										isVoted ? "text-white" : "text-zinc-900"
+										isOwnTopic || isJoined ? "text-white" : "text-zinc-900"
 									}`}
 								>
-									{topic.vote_count}
+									{topic.vote_count || 0}
 								</span>
 							</div>
 						</>

@@ -1,7 +1,8 @@
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AppError, ErrorCodes } from "@/lib/types";
+import type { AppError } from "@/lib/types";
+import { ErrorCodes } from "@/lib/types";
 
 interface ErrorMessageProps {
 	error: AppError | Error | string;
@@ -19,12 +20,12 @@ function getErrorMessage(error: AppError | Error | string): string {
 				return "Your session has expired. Please sign in again.";
 			case ErrorCodes.BLOCKED_USER:
 				return "Your account has been blocked";
-			case ErrorCodes.ALREADY_VOTED:
-				return "You have already voted in this session";
-			case ErrorCodes.VOTING_CLOSED:
-				return "Voting is closed for this session";
-			case ErrorCodes.CANNOT_VOTE_OWN_TOPIC:
-				return "You cannot vote for your own topic";
+			case ErrorCodes.ALREADY_JOINED:
+				return "You have already joined a topic in this session";
+			case ErrorCodes.JOINING_CLOSED:
+				return "Joining is closed for this session";
+			case ErrorCodes.CANNOT_JOIN_OWN_TOPIC:
+				return "You cannot join your own topic - you're leading it!";
 			case ErrorCodes.ALREADY_CREATED_TOPIC:
 				return "You have already created a topic for this session";
 			case ErrorCodes.NETWORK_ERROR:

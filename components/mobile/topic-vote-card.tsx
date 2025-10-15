@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { TopicDetails } from "@/lib/types";
-import { VoteState } from "@/lib/types";
+import { JoinState } from "@/lib/types";
 import { VotesService } from "@/lib/services/votes.service";
-import { ThumbsUp, Loader2, Users } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 import { formatTimeAgo } from "@/lib/utils/formatters";
 
 interface TopicVoteCardProps {
@@ -22,33 +22,33 @@ export function TopicVoteCard({
 	participantId,
 	onVoteChange,
 }: TopicVoteCardProps) {
-	const [voteState, setVoteState] = useState<VoteState>(VoteState.NOT_VOTED);
-	const [isVoting, setIsVoting] = useState(false);
+	const [joinState, setJoinState] = useState<JoinState>(JoinState.NOT_JOINED);
+	const [isJoining, setIsJoining] = useState(false);
 	const isOwnTopic = topic.author_id === participantId;
 
-	const handleVote = async () => {
-		if (isVoting || isOwnTopic) return;
+	const handleJoin = async () => {
+		if (isJoining || isOwnTopic) return;
 
 		try {
-			setIsVoting(true);
-			setVoteState(VoteState.VOTING);
+			setIsJoining(true);
+			setJoinState(JoinState.JOINING);
 
-			await VotesService.castVote(participantId, {
+			await VotesService.joinTopic(participantId, {
 				topic_id: topic.topic_id,
 				bof_session_id: topic.bof_session_id,
 			});
-			setVoteState(VoteState.VOTED);
+			setJoinState(JoinState.JOINED);
 			onVoteChange?.();
 		} catch (error) {
-			console.error("Error voting:", error);
-			setVoteState(VoteState.ERROR);
+			console.error("Error joining:", error);
+			setJoinState(JoinState.ERROR);
 		} finally {
-			setIsVoting(false);
+			setIsJoining(false);
 		}
 	};
 
-	const isVoted = voteState === VoteState.VOTED;
-	const isVotingThis = isVoting;
+	const isJoined = joinState === JoinState.JOINED;
+	const isJoiningThis = isJoining;
 
 	return (
 		<Card className="bg-gray-50 border-gray-200">
@@ -84,55 +84,55 @@ export function TopicVoteCard({
 						<span>{formatTimeAgo(topic.created_at)}</span>
 					</div>
 
-					{/* Vote Button and Stats */}
+					{/* Join Button and Stats */}
 					<div className="flex items-center justify-between">
 						<Button
 							size="sm"
-							variant={isVoted ? "default" : "outline"}
-							onClick={handleVote}
-							disabled={isVotingThis || isOwnTopic}
+							variant={
+								isOwnTopic ? "default" : isJoined ? "default" : "outline"
+							}
+							onClick={handleJoin}
+							disabled={isJoiningThis || isOwnTopic}
 							className={`h-8 px-3 text-xs ${
-								isOwnTopic ? "bg-gray-100 text-gray-500 border-gray-200" : ""
+								isOwnTopic
+									? "bg-blue-500 hover:bg-blue-600"
+									: isJoined
+										? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
+										: ""
 							}`}
 						>
-							{isVotingThis ? (
+							{isJoiningThis ? (
 								<Loader2 className="h-3 w-3 animate-spin" />
-							) : isOwnTopic ? null : (
-								<ThumbsUp className="h-3 w-3" />
+							) : (
+								<Users className="h-3 w-3" />
 							)}
 							<span className="ml-1">
-								{isOwnTopic ? "Your Topic" : isVoted ? "Voted" : "Vote"}
+								{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
 							</span>
 						</Button>
 
 						<div className="flex items-center gap-2 text-xs text-muted-foreground">
 							<div className="flex items-center gap-1">
-								<ThumbsUp className="h-3 w-3" />
-								<span className="font-medium">{topic.vote_count}</span>
+								<Users className="h-3 w-3" />
+								<span className="font-medium">{topic.vote_count || 0}</span>
 							</div>
-							{topic.voters.length > 0 && (
-								<div className="flex items-center gap-1">
-									<Users className="h-3 w-3" />
-									<span>{topic.voters.length}</span>
-								</div>
-							)}
 						</div>
 					</div>
 
-					{/* Voters List */}
-					{topic.voters.length > 0 && (
+					{/* Joined Users List */}
+					{topic.joined_users && topic.joined_users.length > 0 && (
 						<div className="space-y-1">
 							<div className="text-xs font-medium text-muted-foreground">
-								Voted by:
+								Joined by:
 							</div>
 							<div className="flex flex-wrap gap-1">
-								{topic.voters.map((voter) => (
+								{topic.joined_users.map((user) => (
 									<Badge
-										key={voter.id}
+										key={user.id}
 										variant="secondary"
 										className="text-xs px-2 py-0.5"
 									>
-										{voter.name}
+										{user.name}
 									</Badge>
 								))}
 							</div>

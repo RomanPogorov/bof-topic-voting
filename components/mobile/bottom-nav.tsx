@@ -17,11 +17,11 @@ const tabs = [
 		icon: FileText,
 		label: "My Topics",
 	},
-	{
-		href: ROUTES.LEADERBOARD,
-		icon: Trophy,
-		label: "Leaders",
-	},
+	// {
+	// 	href: ROUTES.LEADERBOARD,
+	// 	icon: Trophy,
+	// 	label: "Leaders",
+	// },
 	{
 		href: ROUTES.PROFILE,
 		icon: User,

@@ -78,9 +78,24 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 				</div>
 
 				{/* Author */}
-				<p className="mb-4 text-sm text-slate-400">
+				<p className="mb-2 text-sm text-slate-400">
 					by {topic.author_name || "Anonymous"}
+					{topic.author_company && ` (${topic.author_company})`}
 				</p>
+
+				{/* Joined Users */}
+				{topic.joined_users && topic.joined_users.length > 0 && (
+					<div className="mb-3 flex flex-wrap gap-1.5">
+						{topic.joined_users.map((user) => (
+							<div
+								key={user.id}
+								className="px-2 py-0.5 bg-slate-700/50 rounded-full text-[11px] text-slate-300"
+							>
+								{user.name}
+							</div>
+						))}
+					</div>
+				)}
 
 				{/* Vote Count & Bar */}
 				<div className="space-y-2">

@@ -1,15 +1,15 @@
 import { supabase } from "../supabase/client";
-import type { Vote, CastVoteRequest } from "../types";
+import type { Vote, CastVoteRequest, JoinTopicRequest } from "../types";
 import { ErrorCodes } from "../types";
 import { AnalyticsService } from "./analytics.service";
 
 export class VotesService {
   /**
-   * Cast a vote (or change vote to different topic)
+   * Join a topic (or change join to different topic)
    */
-  static async castVote(
+  static async joinTopic(
     participantId: string,
-    request: CastVoteRequest
+    request: JoinTopicRequest
   ): Promise<Vote> {
     // Use server API endpoint to bypass RLS issues
     const response = await fetch("/api/votes/cast", {
@@ -40,9 +40,20 @@ export class VotesService {
   }
 
   /**
-   * Get user's vote for a BOF session
+   * Cast a vote (or change vote to different topic)
+   * @deprecated Use joinTopic instead
    */
-  static async getUserVote(
+  static async castVote(
+    participantId: string,
+    request: CastVoteRequest
+  ): Promise<Vote> {
+    return this.joinTopic(participantId, request);
+  }
+
+  /**
+   * Get user's join for a BOF session
+   */
+  static async getUserJoin(
     participantId: string,
     bofSessionId: string
   ): Promise<Vote | null> {
@@ -59,9 +70,20 @@ export class VotesService {
   }
 
   /**
-   * Remove vote
+   * Get user's vote for a BOF session
+   * @deprecated Use getUserJoin instead
    */
-  static async removeVote(
+  static async getUserVote(
+    participantId: string,
+    bofSessionId: string
+  ): Promise<Vote | null> {
+    return this.getUserJoin(participantId, bofSessionId);
+  }
+
+  /**
+   * Leave a topic (remove join)
+   */
+  static async leaveTopic(
     voteId: string,
     participantId: string
   ): Promise<void> {
@@ -72,6 +94,17 @@ export class VotesService {
       .eq("participant_id", participantId);
 
     if (error) throw new Error(ErrorCodes.SERVER_ERROR);
+  }
+
+  /**
+   * Remove vote
+   * @deprecated Use leaveTopic instead
+   */
+  static async removeVote(
+    voteId: string,
+    participantId: string
+  ): Promise<void> {
+    return this.leaveTopic(voteId, participantId);
   }
 
   /**

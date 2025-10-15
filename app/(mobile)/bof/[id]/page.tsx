@@ -12,9 +12,20 @@ import { TopicCard } from "@/components/mobile/topic-card";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
 import { ArrowLeft, RefreshCw, Check } from "lucide-react";
 import { VotesService } from "@/lib/services/votes.service";
+import { TopicsService } from "@/lib/services/topics.service";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BOFPageProps {
 	params: Promise<{ id: string }>;
@@ -27,32 +38,59 @@ export default function BOFPage({ params }: BOFPageProps) {
 		id,
 		participant?.id,
 	);
-	const [isVoting, setIsVoting] = useState(false);
-	const [votingTopicId, setVotingTopicId] = useState<string | null>(null);
+	const [isJoining, setIsJoining] = useState(false);
+	const [joiningTopicId, setJoiningTopicId] = useState<string | null>(null);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [topicToDelete, setTopicToDelete] = useState<string | null>(null);
 
-	const handleVote = async (topicId: string) => {
+	const handleJoin = async (topicId: string) => {
 		if (!participant) {
-			toast.error("Please sign in to vote");
+			toast.error("Please sign in to join");
 			return;
 		}
 
 		try {
-			setIsVoting(true);
-			setVotingTopicId(topicId);
-			await VotesService.castVote(participant.id, {
+			setIsJoining(true);
+			setJoiningTopicId(topicId);
+			await VotesService.joinTopic(participant.id, {
 				topic_id: topicId,
 				bof_session_id: id,
 			});
 
 			toast.success(
-				userVote ? "Vote changed successfully!" : "Vote cast successfully!",
+				userVote ? "Joined another topic!" : "Successfully joined!",
 			);
 			await refresh();
 		} catch (error: unknown) {
-			toast.error((error as Error).message || "Failed to vote");
+			toast.error((error as Error).message || "Failed to join");
 		} finally {
-			setIsVoting(false);
-			setVotingTopicId(null);
+			setIsJoining(false);
+			setJoiningTopicId(null);
+		}
+	};
+
+	const handleEdit = (_topicId: string) => {
+		// TODO: Implement edit functionality
+		toast.info("Edit functionality coming soon!");
+	};
+
+	const handleDelete = (topicId: string) => {
+		setTopicToDelete(topicId);
+		setDeleteDialogOpen(true);
+	};
+
+	const confirmDelete = async () => {
+		if (!topicToDelete) return;
+
+		try {
+			await TopicsService.deleteTopicAsAdmin(topicToDelete);
+			toast.success("Topic deleted successfully!");
+			await refresh();
+		} catch (error: unknown) {
+			toast.error((error as Error).message || "Failed to delete topic");
+		} finally {
+			setDeleteDialogOpen(false);
+			setTopicToDelete(null);
 		}
 	};
 
@@ -152,10 +190,10 @@ export default function BOFPage({ params }: BOFPageProps) {
 								Topics ({topics.length})
 							</h2>
 							{userVote && (
-								<div className="bg-zinc-900 flex gap-[4px] items-center justify-center px-[12px] py-[8px] rounded-[9999px]">
+								<div className="bg-[#ea4a35] flex gap-[4px] items-center justify-center px-[12px] py-[8px] rounded-[9999px]">
 									<Check className="h-4 w-4 text-white" />
 									<span className="font-medium text-[12px] leading-[16px] text-center text-white whitespace-pre">
-										You voted
+										You joined
 									</span>
 								</div>
 							)}
@@ -163,22 +201,55 @@ export default function BOFPage({ params }: BOFPageProps) {
 
 						{/* Topics list */}
 						<div className="flex flex-col gap-[12px] w-full">
-							{topics.map((topic) => (
-								<TopicCard
-									key={topic.topic_id}
-									topic={topic}
-									isVoted={userVote?.topic_id === topic.topic_id}
-									onVote={handleVote}
-									isVoting={isVoting}
-									disabled={!participant}
-									isOwnTopic={topic.author_id === participant?.id}
-									votingTopicId={votingTopicId}
-								/>
-							))}
+							{topics.map((topic) => {
+								const isOwnTopic = topic.author_id === participant?.id;
+
+								return (
+									<TopicCard
+										key={topic.topic_id}
+										topic={topic}
+										isJoined={userVote?.topic_id === topic.topic_id}
+										onJoin={handleJoin}
+										isJoining={isJoining}
+										disabled={!participant}
+										isOwnTopic={isOwnTopic}
+										joiningTopicId={joiningTopicId}
+										onEdit={isOwnTopic ? handleEdit : undefined}
+										onDelete={isOwnTopic ? handleDelete : undefined}
+									/>
+								);
+							})}
 						</div>
 					</>
 				)}
 			</div>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Topic?</AlertDialogTitle>
+						<AlertDialogDescription>
+							{topicToDelete &&
+								(() => {
+									const topic = topics.find(
+										(t) => t.topic_id === topicToDelete,
+									);
+									const joinedCount = topic?.joined_users?.length || 0;
+									return joinedCount > 0
+										? `${joinedCount} ${joinedCount === 1 ? "person has" : "people have"} joined this topic. Are you sure you want to delete it?`
+										: "Are you sure you want to delete this topic? This action cannot be undone.";
+								})()}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={confirmDelete}>
+							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
