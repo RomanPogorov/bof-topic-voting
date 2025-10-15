@@ -96,7 +96,9 @@ export default function HomePage() {
 
 						<div className="flex flex-col gap-8">
 							{dateSessions.map((session) => (
-								<BOFCard key={session.id} session={session} />
+								<div key={session.id}>
+									<BOFCard session={session} />
+								</div>
 							))}
 						</div>
 					</div>

@@ -45,3 +45,19 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2);
 }
+
+/**
+ * Format BOF session info (e.g., "Oct, 20 – Morning Session 1 – 10:00AM")
+ */
+export function formatBOFSessionInfo(
+  sessionTime: string | Date,
+  sessionNumber: number
+): string {
+  const dateObj =
+    typeof sessionTime === "string" ? parseISO(sessionTime) : sessionTime;
+  const dateStr = format(dateObj, "MMM, d");
+  const timeStr = format(dateObj, "h:mmaaa");
+  const sessionPeriod = sessionNumber === 1 ? "Morning" : "Evening";
+
+  return `${dateStr} – ${sessionPeriod} Session ${sessionNumber} – ${timeStr}`;
+}
