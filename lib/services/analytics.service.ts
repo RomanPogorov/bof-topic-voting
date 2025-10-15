@@ -7,7 +7,7 @@ export class AnalyticsService {
   static async track(params: {
     participant_id?: string;
     event_type: string;
-    event_data?: Record<string, any>;
+    event_data?: Record<string, unknown>;
   }): Promise<void> {
     try {
       await supabase.from("analytics_events").insert({
