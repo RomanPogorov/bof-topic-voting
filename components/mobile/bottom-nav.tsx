@@ -33,7 +33,7 @@ export function BottomNav() {
 	const pathname = usePathname();
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 safe-bottom">
+		<nav className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[16px] z-50 safe-bottom">
 			<div className="flex justify-around items-center h-16 max-w-2xl mx-auto px-2">
 				{tabs.map((tab) => {
 					const Icon = tab.icon;
@@ -44,20 +44,22 @@ export function BottomNav() {
 							key={tab.href}
 							href={tab.href}
 							className={cn(
-								"flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all touch-target",
+								"flex flex-col items-center rounded-lg transition-all touch-target",
 								"active:scale-95",
 								isActive
-									? "text-primary"
-									: "text-muted-foreground hover:text-foreground",
+									? "gap-[3px] pb-2 pt-[7px] px-3 text-[#ea4a35]"
+									: "gap-1 px-3 py-2 text-zinc-500 hover:text-zinc-700",
 							)}
 						>
 							<Icon
 								className={cn(
-									"h-5 w-5 transition-transform",
-									isActive && "scale-110",
+									"transition-transform",
+									isActive ? "h-[22px] w-[22px]" : "h-5 w-5",
 								)}
 							/>
-							<span className="text-xs font-medium">{tab.label}</span>
+							<span className="text-[12px] leading-[16px] font-medium">
+								{tab.label}
+							</span>
 						</Link>
 					);
 				})}
