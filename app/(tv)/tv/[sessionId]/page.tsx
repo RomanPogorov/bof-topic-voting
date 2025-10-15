@@ -11,6 +11,7 @@ import { LeaderboardCard } from "@/components/tv/leaderboard-card";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Calendar, Clock, TrendingUp, Users } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
+import { AnimatePresence } from "framer-motion";
 
 export default function TVDisplayPage() {
 	const params = useParams();
@@ -274,14 +275,16 @@ export default function TVDisplayPage() {
 						</div>
 					) : (
 						<div className="space-y-4">
-							{topics.map((topic, index) => (
-								<TopicBar
-									key={topic.topic_id}
-									topic={topic}
-									maxVotes={maxVotes}
-									rank={index + 1}
-								/>
-							))}
+							<AnimatePresence mode="popLayout">
+								{topics.map((topic, index) => (
+									<TopicBar
+										key={topic.topic_id}
+										topic={topic}
+										maxVotes={maxVotes}
+										rank={index + 1}
+									/>
+								))}
+							</AnimatePresence>
 						</div>
 					)}
 				</div>

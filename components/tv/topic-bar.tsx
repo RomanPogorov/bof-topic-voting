@@ -4,6 +4,7 @@ import type { TopicDetails } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 import { Trophy, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 interface TopicBarProps {
 	topic: TopicDetails;
@@ -32,7 +33,15 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 		: "bg-gradient-to-r from-blue-600 to-blue-500";
 
 	return (
-		<div
+		<motion.div
+			layoutId={`topic-${topic.topic_id}`}
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, scale: 0.95 }}
+			transition={{
+				layout: { type: "spring", stiffness: 300, damping: 30 },
+				opacity: { duration: 0.3 },
+			}}
 			className={cn(
 				"group relative overflow-hidden rounded-xl bg-slate-800/50 p-6 backdrop-blur-sm transition-all duration-500",
 				isNew && "animate-pulse",
@@ -101,6 +110,6 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 					</div>
 				</div>
 			</div>
-		</div>
+		</motion.div>
 	);
 }
