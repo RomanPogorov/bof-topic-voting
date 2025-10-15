@@ -8,7 +8,7 @@ import {
 	LayoutDashboard,
 	Users,
 	UserPlus,
-	QrCode,
+	Calendar,
 	Shield,
 	BarChart3,
 	Settings,
@@ -31,9 +31,9 @@ const navItems = [
 		icon: UserPlus,
 	},
 	{
-		label: "QR Codes",
-		href: ROUTES.ADMIN_QR,
-		icon: QrCode,
+		label: "BOF & Topics",
+		href: ROUTES.ADMIN_SESSIONS,
+		icon: Calendar,
 	},
 	{
 		label: "Moderation",

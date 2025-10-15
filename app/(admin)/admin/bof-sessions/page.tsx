@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Plus, RefreshCw } from "lucide-react";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { toast } from "sonner";
-import { Topic } from "@/lib/types";
+import type { Topic } from "@/lib/types";
 import { AdminTopicList } from "@/components/admin/admin-topic-list";
 
 interface BOFSessionRow {
@@ -26,14 +26,14 @@ export default function AdminBOFSessionsPage() {
 	const [sessions, setSessions] = useState<BOFSessionRow[]>([]);
 	const { participant } = useAuth();
 
-	const load = async () => {
+	const load = useCallback(async () => {
 		const { data } = await supabase
 			.from("bof_sessions")
 			.select("id, day_number, session_number, title, description, topics(*)")
 			.order("day_number")
 			.order("session_number");
 		setSessions(data || []);
-	};
+	}, []);
 
 	useEffect(() => {
 		load();

@@ -1,6 +1,6 @@
 "use client";
 
-import { Topic } from "@/lib/types";
+import type { Topic } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
