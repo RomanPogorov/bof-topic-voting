@@ -10,6 +10,7 @@ import { ErrorMessage } from "@/components/shared/error-message";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TopicCard } from "@/components/mobile/topic-card";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
+import { EditTopicSheet } from "@/components/mobile/edit-topic-sheet";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { VotesService } from "@/lib/services/votes.service";
 import { TopicsService } from "@/lib/services/topics.service";
@@ -42,6 +43,8 @@ export default function BOFPage({ params }: BOFPageProps) {
 	const [joiningTopicId, setJoiningTopicId] = useState<string | null>(null);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [topicToDelete, setTopicToDelete] = useState<string | null>(null);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
+	const [topicToEdit, setTopicToEdit] = useState<string | null>(null);
 
 	const handleJoin = async (topicId: string) => {
 		if (!participant) {
@@ -75,9 +78,9 @@ export default function BOFPage({ params }: BOFPageProps) {
 		}
 	};
 
-	const handleEdit = (_topicId: string) => {
-		// TODO: Implement edit functionality
-		toast.info("Edit functionality coming soon!");
+	const handleEdit = (topicId: string) => {
+		setTopicToEdit(topicId);
+		setEditDialogOpen(true);
 	};
 
 	const handleDelete = (topicId: string) => {
@@ -222,6 +225,25 @@ export default function BOFPage({ params }: BOFPageProps) {
 					</>
 				)}
 			</div>
+
+			{/* Edit Topic Sheet */}
+			{topicToEdit &&
+				(() => {
+					const topic = topics.find((t) => t.topic_id === topicToEdit);
+					return topic ? (
+						<EditTopicSheet
+							topicId={topicToEdit}
+							currentTitle={topic.title}
+							currentDescription={topic.description || undefined}
+							open={editDialogOpen}
+							onOpenChange={setEditDialogOpen}
+							onTopicUpdated={async () => {
+								setTopicToEdit(null);
+								await refresh();
+							}}
+						/>
+					) : null;
+				})()}
 
 			{/* Delete Confirmation Dialog */}
 			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

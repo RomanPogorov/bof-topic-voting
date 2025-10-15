@@ -56,6 +56,33 @@ export class TopicsService {
     return topic;
   }
 
+  static async updateTopic(
+    topicId: string,
+    data: { title: string; description?: string }
+  ): Promise<Topic> {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("User not authenticated");
+    }
+
+    const resp = await fetch(`/api/admin/topics/${topicId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!resp.ok) {
+      const { error } = await resp.json();
+      throw new Error(error || "Failed to update topic");
+    }
+
+    const { topic } = await resp.json();
+    return topic;
+  }
+
   static async deleteTopicAsAdmin(topicId: string): Promise<void> {
     // We need to pass the user's auth token to the backend so it can
     // verify that the user is an admin.

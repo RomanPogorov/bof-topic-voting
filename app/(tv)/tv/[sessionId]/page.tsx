@@ -4,10 +4,9 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import type { TopicDetails, ParticipantStats, BOFSession } from "@/lib/types";
+import type { TopicDetails, BOFSession } from "@/lib/types";
 import { supabase } from "@/lib/supabase/client";
 import { TopicBar } from "@/components/tv/topic-bar";
-import { LeaderboardCard } from "@/components/tv/leaderboard-card";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Calendar, Clock, TrendingUp, Users } from "lucide-react";
 import { formatDate } from "@/lib/utils/formatters";
@@ -19,7 +18,6 @@ export default function TVDisplayPage() {
 
 	const [session, setSession] = useState<BOFSession | null>(null);
 	const [topics, setTopics] = useState<TopicDetails[]>([]);
-	const [leaderboard, setLeaderboard] = useState<ParticipantStats[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 	const [isUpdating, setIsUpdating] = useState(false);
@@ -113,70 +111,6 @@ export default function TVDisplayPage() {
 			clearInterval(interval);
 		};
 	}, [sessionId, fetchTopics, hasRecentActivity]);
-
-	// Fetch leaderboard with update indicator
-	const fetchLeaderboard = useCallback(async (showIndicator = false) => {
-		try {
-			if (showIndicator) setIsUpdating(true);
-
-			const { data, error } = await supabase
-				.from("participant_stats")
-				.select("*")
-				.order("total_points", { ascending: false })
-				.limit(5);
-
-			if (error) throw error;
-			setLeaderboard(data || []);
-		} catch (err) {
-			console.error("Error fetching leaderboard:", err);
-		} finally {
-			if (showIndicator) {
-				setTimeout(() => setIsUpdating(false), 1000);
-			}
-		}
-	}, []);
-
-	// Fetch leaderboard
-	useEffect(() => {
-		fetchLeaderboard();
-
-		// Subscribe to real-time leaderboard updates
-		const channel = supabase
-			.channel("tv-leaderboard")
-			.on(
-				"postgres_changes",
-				{
-					event: "*",
-					schema: "public",
-					table: "participant_achievements",
-				},
-				() => {
-					fetchLeaderboard(true);
-				},
-			)
-			.on(
-				"postgres_changes",
-				{
-					event: "*",
-					schema: "public",
-					table: "votes",
-				},
-				() => {
-					fetchLeaderboard(true);
-				},
-			)
-			.subscribe();
-
-		// Fallback: periodic refresh every 60 seconds
-		const interval = setInterval(() => {
-			fetchLeaderboard(true);
-		}, 60000);
-
-		return () => {
-			supabase.removeChannel(channel);
-			clearInterval(interval);
-		};
-	}, [fetchLeaderboard]);
 
 	if (isLoading) {
 		return (
@@ -272,13 +206,13 @@ export default function TVDisplayPage() {
 					</div>
 				) : (
 					<>
-						<div className="mb-4 text-lg text-slate-300">
+						<div className="mb-6 text-lg text-slate-300">
 							<span className="font-semibold text-yellow-400">
 								Top 5 topics
 							</span>{" "}
 							will be discussed
 						</div>
-						<div className="space-y-4">
+						<div className="flex flex-wrap gap-6">
 							<AnimatePresence mode="popLayout">
 								{topics.map((topic, index) => (
 									<TopicBar

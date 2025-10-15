@@ -43,53 +43,54 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 				opacity: { duration: 0.3 },
 			}}
 			className={cn(
-				"group relative overflow-hidden rounded-xl bg-slate-800/50 p-6 backdrop-blur-sm transition-all duration-500",
+				"group relative overflow-hidden rounded-xl bg-slate-800/50 p-6 backdrop-blur-sm transition-all duration-500 flex flex-col",
+				"w-[calc(20%-1.2rem)] aspect-square",
 				isNew && "animate-pulse",
 				isTop3 && "ring-2 ring-yellow-500/30",
 			)}
 		>
 			{/* Rank Badge */}
-			<div className="absolute top-6 left-6 z-10">
+			<div className="absolute top-4 left-4 z-10">
 				<div
 					className={cn(
-						"flex h-10 w-10 items-center justify-center rounded-full font-bold text-lg",
+						"flex h-12 w-12 items-center justify-center rounded-full font-bold text-xl",
 						isTop3
 							? "bg-gradient-to-br from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/50"
 							: "bg-slate-700 text-slate-300",
 					)}
 				>
-					{rank === 1 && <Trophy className="h-5 w-5" />}
+					{rank === 1 && <Trophy className="h-6 w-6" />}
 					{rank !== 1 && rank}
 				</div>
 			</div>
 
 			{/* Content */}
-			<div className="relative pl-16">
-				<div className="mb-3 flex items-start justify-between gap-4">
-					<h3 className="text-xl font-semibold text-white line-clamp-2 leading-tight">
+			<div className="relative flex flex-col h-full pt-16">
+				{/* Author */}
+				<p className="mb-2 text-sm text-slate-400 line-clamp-1">
+					by {topic.author_name || "Anonymous"}
+					{topic.author_company && ` (${topic.author_company})`}
+				</p>
+
+				<div className="mb-3 flex items-start justify-between gap-2">
+					<h3 className="text-lg font-semibold text-white line-clamp-3 leading-tight flex-1">
 						{topic.title}
 					</h3>
 					{isNew && (
-						<div className="flex items-center gap-1 rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400">
+						<div className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-1 text-xs font-medium text-green-400 shrink-0">
 							<TrendingUp className="h-3 w-3" />
 							NEW
 						</div>
 					)}
 				</div>
 
-				{/* Author */}
-				<p className="mb-2 text-sm text-slate-400">
-					by {topic.author_name || "Anonymous"}
-					{topic.author_company && ` (${topic.author_company})`}
-				</p>
-
 				{/* Joined Users */}
 				{topic.joined_users && topic.joined_users.length > 0 && (
-					<div className="mb-3 flex flex-wrap gap-1.5">
+					<div className="mb-3 flex flex-wrap gap-2">
 						{topic.joined_users.map((user) => (
 							<div
 								key={user.id}
-								className="px-2 py-0.5 bg-slate-700/50 rounded-full text-[11px] text-slate-300"
+								className="px-3 py-1 bg-slate-700/50 rounded-full text-sm text-slate-300"
 							>
 								{user.name}
 							</div>
@@ -98,10 +99,10 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 				)}
 
 				{/* Vote Count & Bar */}
-				<div className="space-y-2">
+				<div className="space-y-2 mt-auto">
 					<div className="flex items-center justify-between text-sm">
 						<span className="text-slate-400">Votes</span>
-						<span className="text-2xl font-bold text-white">
+						<span className="text-3xl font-bold text-white">
 							{topic.vote_count}
 						</span>
 					</div>
