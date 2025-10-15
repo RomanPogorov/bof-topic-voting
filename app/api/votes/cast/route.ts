@@ -13,16 +13,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Check if joining own topic (can't join your own topic - you're leading it)
-    const { data: topic } = await supabaseAdmin
+    // 1. Check if user has created a topic in this BOF session
+    const { data: userTopic } = await supabaseAdmin
       .from("topics")
-      .select("participant_id")
-      .eq("id", topicId)
+      .select("id")
+      .eq("bof_session_id", bofSessionId)
+      .eq("participant_id", participantId)
       .single();
 
-    if (topic && topic.participant_id === participantId) {
+    if (userTopic) {
       return NextResponse.json(
-        { error: ErrorCodes.CANNOT_JOIN_OWN_TOPIC },
+        { error: "You are leading your own topic and cannot join others" },
         { status: 400 }
       );
     }

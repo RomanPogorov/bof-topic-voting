@@ -49,6 +49,12 @@ export default function BOFPage({ params }: BOFPageProps) {
 			return;
 		}
 
+		// Check if user has created a topic in this session
+		if (hasCreatedTopic) {
+			toast.error("You are leading your own topic and cannot join others");
+			return;
+		}
+
 		try {
 			setIsJoining(true);
 			setJoiningTopicId(topicId);
@@ -211,7 +217,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 										isJoined={userVote?.topic_id === topic.topic_id}
 										onJoin={handleJoin}
 										isJoining={isJoining}
-										disabled={!participant}
+										disabled={!participant || hasCreatedTopic}
 										isOwnTopic={isOwnTopic}
 										joiningTopicId={joiningTopicId}
 										onEdit={isOwnTopic ? handleEdit : undefined}

@@ -15,19 +15,21 @@ interface TopicVoteCardProps {
 	topic: TopicDetails;
 	participantId: string;
 	onVoteChange?: () => void;
+	hasCreatedTopic?: boolean;
 }
 
 export function TopicVoteCard({
 	topic,
 	participantId,
 	onVoteChange,
+	hasCreatedTopic = false,
 }: TopicVoteCardProps) {
 	const [joinState, setJoinState] = useState<JoinState>(JoinState.NOT_JOINED);
 	const [isJoining, setIsJoining] = useState(false);
 	const isOwnTopic = topic.author_id === participantId;
 
 	const handleJoin = async () => {
-		if (isJoining || isOwnTopic) return;
+		if (isJoining || isOwnTopic || hasCreatedTopic) return;
 
 		try {
 			setIsJoining(true);
@@ -49,6 +51,7 @@ export function TopicVoteCard({
 
 	const isJoined = joinState === JoinState.JOINED;
 	const isJoiningThis = isJoining;
+	const isDisabled = hasCreatedTopic && !isOwnTopic;
 
 	return (
 		<Card className="bg-gray-50 border-gray-200">
@@ -85,36 +88,45 @@ export function TopicVoteCard({
 					</div>
 
 					{/* Join Button and Stats */}
-					<div className="flex items-center justify-between">
-						<Button
-							size="sm"
-							variant={
-								isOwnTopic ? "default" : isJoined ? "default" : "outline"
-							}
-							onClick={handleJoin}
-							disabled={isJoiningThis || isOwnTopic}
-							className={`h-8 px-3 text-xs ${
-								isOwnTopic
-									? "bg-blue-500 hover:bg-blue-600"
-									: isJoined
-										? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
-										: ""
-							}`}
-						>
-							{isJoiningThis ? (
-								<Loader2 className="h-3 w-3 animate-spin" />
-							) : (
-								<Users className="h-3 w-3" />
-							)}
-							<span className="ml-1">
-								{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
-							</span>
-						</Button>
+					<div className="space-y-1">
+						{isDisabled && (
+							<p className="text-[10px] text-zinc-500 text-center">
+								You're leading your own topic
+							</p>
+						)}
+						<div className="flex items-center justify-between">
+							<Button
+								size="sm"
+								variant={
+									isOwnTopic ? "default" : isJoined ? "default" : "outline"
+								}
+								onClick={handleJoin}
+								disabled={isJoiningThis || isOwnTopic || isDisabled}
+								className={`h-8 px-3 text-xs ${
+									isOwnTopic
+										? "bg-blue-500 hover:bg-blue-600"
+										: isJoined
+											? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
+											: isDisabled
+												? "bg-gray-200 cursor-not-allowed"
+												: ""
+								}`}
+							>
+								{isJoiningThis ? (
+									<Loader2 className="h-3 w-3 animate-spin" />
+								) : (
+									<Users className="h-3 w-3" />
+								)}
+								<span className="ml-1">
+									{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
+								</span>
+							</Button>
 
-						<div className="flex items-center gap-2 text-xs text-muted-foreground">
-							<div className="flex items-center gap-1">
-								<Users className="h-3 w-3" />
-								<span className="font-medium">{topic.vote_count || 0}</span>
+							<div className="flex items-center gap-2 text-xs text-muted-foreground">
+								<div className="flex items-center gap-1">
+									<Users className="h-3 w-3" />
+									<span className="font-medium">{topic.vote_count || 0}</span>
+								</div>
 							</div>
 						</div>
 					</div>

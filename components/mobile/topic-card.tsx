@@ -35,6 +35,7 @@ export function TopicCard({
 	};
 
 	const joinedUsers = topic.joined_users || [];
+	const cannotJoin = disabled && !isOwnTopic;
 
 	return (
 		<div className="bg-white rounded-[16px] p-[16px] flex flex-col gap-[12px]">
@@ -101,53 +102,72 @@ export function TopicCard({
 			)}
 
 			{/* Footer: Join Button */}
-			<div className="flex items-center justify-end w-full">
-				<button
-					type="button"
-					onClick={handleJoin}
-					disabled={disabled || isThisTopicJoining || isOwnTopic}
-					className={`h-[40px] rounded-[6px] flex items-center gap-[4px] px-[12px] overflow-clip shrink-0 transition-all ${
-						isOwnTopic
-							? "bg-blue-500 hover:bg-blue-500/90"
-							: isJoined
-								? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
-								: "bg-white hover:bg-white/90 border border-gray-300"
-					}`}
-				>
-					{isThisTopicJoining ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
-					) : (
-						<>
-							<Users
-								className={`h-4 w-4 ${isOwnTopic || isJoined ? "text-white" : "text-zinc-900"}`}
-							/>
-							<span
-								className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
-									isOwnTopic || isJoined ? "text-white" : "text-zinc-900"
-								}`}
-							>
-								{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
-							</span>
-							<div
-								className={`flex items-center justify-center px-[6px] py-[2px] rounded-[24px] ${
-									isOwnTopic
-										? "bg-blue-600"
-										: isJoined
-											? "bg-[#d52c16]"
-											: "bg-[#efeff1]"
-								}`}
-							>
+			<div className="flex flex-col gap-2 w-full">
+				{cannotJoin && !isOwnTopic && (
+					<p className="text-[11px] text-zinc-500 text-center">
+						You're leading your own topic
+					</p>
+				)}
+				<div className="flex items-center justify-end w-full">
+					<button
+						type="button"
+						onClick={handleJoin}
+						disabled={disabled || isThisTopicJoining || isOwnTopic}
+						className={`h-[40px] rounded-[6px] flex items-center gap-[4px] px-[12px] overflow-clip shrink-0 transition-all ${
+							isOwnTopic
+								? "bg-blue-500 hover:bg-blue-500/90"
+								: isJoined
+									? "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
+									: disabled
+										? "bg-gray-200 border border-gray-300 cursor-not-allowed"
+										: "bg-white hover:bg-white/90 border border-gray-300"
+						}`}
+					>
+						{isThisTopicJoining ? (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						) : (
+							<>
+								<Users
+									className={`h-4 w-4 ${isOwnTopic || isJoined ? "text-white" : disabled ? "text-gray-400" : "text-zinc-900"}`}
+								/>
 								<span
 									className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
-										isOwnTopic || isJoined ? "text-white" : "text-zinc-900"
+										isOwnTopic || isJoined
+											? "text-white"
+											: disabled
+												? "text-gray-400"
+												: "text-zinc-900"
 									}`}
 								>
-									{topic.vote_count || 0}
+									{isOwnTopic ? "Lead" : isJoined ? "Joined" : "Join"}
 								</span>
-							</div>
-						</>
-					)}
-				</button>
+								<div
+									className={`flex items-center justify-center px-[6px] py-[2px] rounded-[24px] ${
+										isOwnTopic
+											? "bg-blue-600"
+											: isJoined
+												? "bg-[#d52c16]"
+												: disabled
+													? "bg-gray-300"
+													: "bg-[#efeff1]"
+									}`}
+								>
+									<span
+										className={`font-medium text-[12px] leading-[16px] text-center whitespace-pre ${
+											isOwnTopic || isJoined
+												? "text-white"
+												: disabled
+													? "text-gray-500"
+													: "text-zinc-900"
+										}`}
+									>
+										{topic.vote_count || 0}
+									</span>
+								</div>
+							</>
+						)}
+					</button>
+				</div>
 			</div>
 		</div>
 	);

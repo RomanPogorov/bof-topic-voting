@@ -46,6 +46,14 @@ export async function POST(request: Request) {
       console.log("Admin creating topic - bypassing unique constraint check");
     }
 
+    // When creating a topic, remove any existing joins/votes in this session
+    // because the user is now a LEAD and cannot join other topics
+    await supabaseAdmin
+      .from("votes")
+      .delete()
+      .eq("participant_id", participantId)
+      .eq("bof_session_id", bof_session_id);
+
     const { data, error } = await supabaseAdmin
       .from("topics")
       .insert({
@@ -77,9 +85,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ topic: data }, { status: 200 });
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json(
-      { error: e.message || "SERVER_ERROR" },
+      { error: (e as Error).message || "SERVER_ERROR" },
       { status: 500 }
     );
   }

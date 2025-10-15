@@ -20,12 +20,30 @@ export async function DELETE(
     .eq("auth_token", token)
     .single();
 
-  // If there's an error, or the user is not found, or they are not an admin, forbid access.
-  if (participantError || !participant || participant.role !== "admin") {
+  if (participantError || !participant) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Get the topic to check ownership
+  const { data: topic, error: topicError } = await supabaseAdmin
+    .from("topics")
+    .select("participant_id")
+    .eq("id", topicId)
+    .single();
+
+  if (topicError || !topic) {
+    return NextResponse.json({ error: "Topic not found" }, { status: 404 });
+  }
+
+  // Check if user is admin OR author of the topic
+  const isAdmin = participant.role === "admin";
+  const isAuthor = topic.participant_id === participant.id;
+
+  if (!isAdmin && !isAuthor) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // If we've reached this point, the user is a verified admin. Proceed with deletion.
+  // Proceed with deletion
   try {
     // Note: Supabase is configured with cascading deletes in the schema.
     // Deleting a topic will automatically delete all associated votes.
