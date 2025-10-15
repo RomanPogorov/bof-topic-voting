@@ -10,9 +10,7 @@ import { ErrorMessage } from "@/components/shared/error-message";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TopicCard } from "@/components/mobile/topic-card";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, Check } from "lucide-react";
 import { VotesService } from "@/lib/services/votes.service";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -75,49 +73,46 @@ export default function BOFPage({ params }: BOFPageProps) {
 	const isAdmin = participant?.role === "admin";
 
 	return (
-		<div className="pb-6 space-y-4 safe-top">
-			{/* Header */}
-			<div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border">
-				<div className="p-4 space-y-3">
-					<div className="flex items-center gap-3">
-						<Link href={ROUTES.HOME}>
-							<Button variant="ghost" size="icon" className="touch-target">
-								<ArrowLeft className="h-5 w-5" />
-							</Button>
-						</Link>
-						<div className="flex-1">
-							<div className="flex items-center gap-2 text-sm text-muted-foreground">
-								<span>Day {bof.day_number}</span>
-								<span>·</span>
-								<span>Session {bof.session_number}</span>
-							</div>
-							<h1 className="text-xl font-bold">{bof.title}</h1>
+		<div className="bg-[#f5f5f6] flex flex-col items-start min-h-screen">
+			{/* Header - sticky */}
+			<div className="backdrop-blur-[2px] bg-[rgba(255,255,255,0.95)] border-b border-zinc-200 sticky top-0 w-full z-[2] px-[16px] pt-[16px] pb-[17px]">
+				<div className="flex gap-[12px] items-center w-full">
+					{/* Back button */}
+					<Link href={ROUTES.HOME}>
+						<div className="bg-[#f5f5f6] flex items-center justify-center rounded-[38px] size-[44px] shrink-0">
+							<ArrowLeft className="h-4 w-4" />
 						</div>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={refresh}
-							className="touch-target"
-						>
-							<RefreshCw className="h-5 w-5" />
-						</Button>
+					</Link>
+
+					{/* Title & Subtitle */}
+					<div className="flex-1 flex flex-col min-w-0">
+						<h1 className="font-bold text-[20px] leading-[28px] text-zinc-950">
+							{bof.title}
+						</h1>
+						<div className="flex gap-[8px] items-center">
+							<span className="font-normal text-[14px] leading-[20px] text-zinc-500 whitespace-pre">
+								{new Date(bof.session_time).toLocaleDateString("en-US", {
+									month: "short",
+									day: "numeric",
+								})}{" "}
+								| Session {bof.session_number}
+							</span>
+						</div>
 					</div>
+
+					{/* Refresh button */}
+					<button
+						type="button"
+						onClick={refresh}
+						className="bg-[#f5f5f6] flex items-center justify-center rounded-[38px] size-[44px] shrink-0"
+					>
+						<RefreshCw className="h-4 w-4" />
+					</button>
 				</div>
 			</div>
 
-			<div className="px-4 space-y-4">
-				{/* Not authenticated message */}
-				{!participant && (
-					<div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
-						<div className="flex items-center gap-2">
-							<AlertCircle className="h-4 w-4 text-orange-600" />
-							<p className="text-sm text-orange-800">
-								Scan your QR code to vote and create topics
-							</p>
-						</div>
-					</div>
-				)}
-
+			{/* Main content */}
+			<div className="flex flex-col gap-[16px] px-[16px] pt-[16px] w-full z-[1]">
 				{/* Create topic button */}
 				{canCreateTopic && (!hasCreatedTopic || isAdmin) && (
 					<CreateTopicSheet
@@ -128,7 +123,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 					/>
 				)}
 
-				{/* Topics list */}
+				{/* Topics section */}
 				{topics.length === 0 ? (
 					<EmptyState
 						icon="💡"
@@ -151,18 +146,23 @@ export default function BOFPage({ params }: BOFPageProps) {
 					/>
 				) : (
 					<>
-						<div className="flex items-center justify-between">
-							<h2 className="text-lg font-semibold">
+						{/* Topics header */}
+						<div className="flex items-center justify-between w-full">
+							<h2 className="font-semibold text-[18px] leading-[28px] text-zinc-950 whitespace-pre">
 								Topics ({topics.length})
 							</h2>
 							{userVote && (
-								<Badge variant="outline" className="bg-primary/5">
-									You voted
-								</Badge>
+								<div className="bg-zinc-900 flex gap-[4px] items-center justify-center px-[12px] py-[8px] rounded-[9999px]">
+									<Check className="h-4 w-4 text-white" />
+									<span className="font-medium text-[12px] leading-[16px] text-center text-white whitespace-pre">
+										You voted
+									</span>
+								</div>
 							)}
 						</div>
 
-						<div className="space-y-3">
+						{/* Topics list */}
+						<div className="flex flex-col gap-[12px] w-full">
 							{topics.map((topic) => (
 								<TopicCard
 									key={topic.topic_id}
