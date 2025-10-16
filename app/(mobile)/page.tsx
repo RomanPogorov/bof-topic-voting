@@ -49,7 +49,7 @@ export default function HomePage() {
 	});
 
 	return (
-		<div className="bg-[#f5f5f6] min-h-screen pb-4 px-4">
+		<div className="bg-[#e7e7e9] min-h-screen pb-4 px-4">
 			<div className="flex flex-col gap-6">
 				{/* Header */}
 				<div className="flex items-center pb-4 pt-12">

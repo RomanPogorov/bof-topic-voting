@@ -120,7 +120,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 	const isAdmin = participant?.role === "admin";
 
 	return (
-		<div className="bg-[#f5f5f6] flex flex-col items-start min-h-screen">
+		<div className="bg-[#e7e7e9] flex flex-col items-start min-h-screen">
 			{/* Header - sticky */}
 			<div className="backdrop-blur-[2px] bg-[rgba(255,255,255,0.95)] border-b border-zinc-200 sticky top-0 w-full z-[2] px-[16px] pt-[16px] pb-[17px]">
 				<div className="flex gap-[12px] items-center w-full">
@@ -201,7 +201,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 						)}
 
 						{/* Topics list */}
-						<div className="flex flex-col gap-[12px] w-full">
+						<div className="flex flex-col gap-[24px] w-full">
 							{topics.map((topic) => {
 								const isOwnTopic = topic.author_id === participant?.id;
 

@@ -102,7 +102,7 @@ export default function MyTopicsPage() {
 	const hasNoActivity = myTopics.length === 0 && myVotes.length === 0;
 
 	return (
-		<div className="bg-[#f5f5f6] min-h-screen pb-[172px]">
+		<div className="bg-[#e7e7e9] min-h-screen pb-[172px]">
 			{/* Main content */}
 			<div className="flex flex-col gap-[24px] px-[16px] pb-[24px]">
 				{/* Header */}
