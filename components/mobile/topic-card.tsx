@@ -48,14 +48,19 @@ export function TopicCard({
 	if (isOwnTopic) {
 		return (
 			<div className="bg-white border-2 border-[#2378e1] rounded-[16px] p-[16px] flex flex-col gap-[12px]">
-				{/* Бейдж Lead + кнопки Edit/Delete */}
+				{/* Бейдж Lead + участники + кнопки Edit/Delete */}
 				<div className="flex items-center gap-[12px]">
-					<div className="flex-1">
-						<div className="bg-[#2378e1] px-[10px] py-[4px] rounded-full h-[25px] inline-flex items-center">
-							<span className="font-normal text-[13px] leading-[16.5px] text-white">
-								Lead
-							</span>
-						</div>
+					<div className="bg-[#2378e1] px-[10px] py-[4px] rounded-full h-[25px] inline-flex items-center">
+						<span className="font-normal text-[13px] leading-[16.5px] text-white">
+							Lead
+						</span>
+					</div>
+					<div className="flex-1" />
+					<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
+						<Users className="size-[16px] text-[#17171c]" />
+						<span className="font-medium text-[12px] leading-[16px] text-[#17171c]">
+							{joinedUsers.length}
+						</span>
 					</div>
 					{onEdit && (
 						<button
@@ -130,11 +135,17 @@ export function TopicCard({
 				isJoined ? "border-2 border-[#ea4a35]" : ""
 			}`}
 		>
-			{/* Автор */}
-			<div className="flex flex-col">
+			{/* Автор + участники */}
+			<div className="flex items-start justify-between">
 				<span className="font-normal text-[13px] leading-[18px] text-zinc-500">
 					Author: {topic.author_name}
 				</span>
+				<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px] border border-zinc-200">
+					<Users className="size-[16px] text-[#17171c]" />
+					<span className="font-medium text-[12px] leading-[16px] text-[#17171c]">
+						{joinedUsers.length}
+					</span>
+				</div>
 			</div>
 
 			{/* Заголовок */}
