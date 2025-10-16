@@ -28,14 +28,14 @@ function SimpleTopicRow({
 	return (
 		<div className="flex items-center gap-[8px] bg-[#f5f5f6] rounded-[6px] p-[8px]">
 			<div className="flex-1 min-w-0 flex flex-col gap-[4px]">
-				<div className="overflow-hidden w-full">
-					<p className="text-[15px] leading-[16px] text-zinc-950 overflow-hidden text-ellipsis tracking-[-0.45px] whitespace-nowrap">
-						{topic.title}
-					</p>
-				</div>
 				<div className="w-full">
 					<p className="text-[12px] leading-[16px] text-[#909098]">
 						{topic.author_name}
+					</p>
+				</div>
+				<div className="overflow-hidden w-full">
+					<p className="text-[15px] leading-[16px] text-zinc-950 overflow-hidden text-ellipsis tracking-[-0.45px] whitespace-nowrap">
+						{topic.title}
 					</p>
 				</div>
 			</div>

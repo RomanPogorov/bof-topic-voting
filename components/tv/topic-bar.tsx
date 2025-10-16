@@ -2,7 +2,7 @@
 
 import type { TopicDetails } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
-import { Trophy, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -13,9 +13,15 @@ interface TopicBarProps {
 	isNew?: boolean;
 }
 
-export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
+export function TopicBar({
+	topic,
+	maxVotes: maxJoined,
+	rank,
+	isNew,
+}: TopicBarProps) {
 	const [width, setWidth] = useState(0);
-	const percentage = maxVotes > 0 ? (topic.vote_count / maxVotes) * 100 : 0;
+	const joinedCount = topic.joined_users?.length || 0;
+	const percentage = maxJoined > 0 ? (joinedCount / maxJoined) * 100 : 0;
 
 	useEffect(() => {
 		// Animate bar on mount
@@ -23,8 +29,8 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 		return () => clearTimeout(timer);
 	}, [percentage]);
 
-	const isTop3 = rank <= 3;
-	const barColor = isTop3
+	const isTop5 = rank <= 5;
+	const barColor = isTop5
 		? rank === 1
 			? "bg-gradient-to-r from-yellow-500 to-yellow-400"
 			: rank === 2
@@ -44,9 +50,10 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 			}}
 			className={cn(
 				"group relative overflow-hidden rounded-xl bg-slate-800/50 p-6 backdrop-blur-sm transition-all duration-500 flex flex-col",
-				"w-[calc(20%-1.2rem)] aspect-square",
+				"w-[calc(20%-1.2rem)] min-h-[280px]",
 				isNew && "animate-pulse",
-				isTop3 && "ring-2 ring-yellow-500/30",
+				isTop5 && "ring-2 ring-yellow-500/30",
+				!isTop5 && "ring-2 ring-white/10",
 			)}
 		>
 			{/* Rank Badge */}
@@ -54,13 +61,12 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 				<div
 					className={cn(
 						"flex h-12 w-12 items-center justify-center rounded-full font-bold text-xl",
-						isTop3
+						isTop5
 							? "bg-gradient-to-br from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/50"
 							: "bg-slate-700 text-slate-300",
 					)}
 				>
-					{rank === 1 && <Trophy className="h-6 w-6" />}
-					{rank !== 1 && rank}
+					{rank}
 				</div>
 			</div>
 
@@ -84,26 +90,12 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 					)}
 				</div>
 
-				{/* Joined Users */}
-				{topic.joined_users && topic.joined_users.length > 0 && (
-					<div className="mb-3 flex flex-wrap gap-2">
-						{topic.joined_users.map((user) => (
-							<div
-								key={user.id}
-								className="px-3 py-1 bg-slate-700/50 rounded-full text-sm text-slate-300"
-							>
-								{user.name}
-							</div>
-						))}
-					</div>
-				)}
-
-				{/* Vote Count & Bar */}
-				<div className="space-y-2 mt-auto">
+				{/* Joined Count & Bar */}
+				<div className="mt-auto space-y-2">
 					<div className="flex items-center justify-between text-sm">
-						<span className="text-slate-400">Votes</span>
+						<span className="text-slate-400">Joined</span>
 						<span className="text-3xl font-bold text-white">
-							{topic.vote_count}
+							{topic.joined_users?.length || 0}
 						</span>
 					</div>
 
@@ -121,8 +113,20 @@ export function TopicBar({ topic, maxVotes, rank, isNew }: TopicBarProps) {
 						</div>
 					</div>
 
-					<div className="text-right text-xs text-slate-500">
-						{percentage.toFixed(1)}%
+					{/* Joined Users - fixed height area */}
+					<div className="min-h-[60px] pt-3">
+						{topic.joined_users && topic.joined_users.length > 0 && (
+							<div className="flex flex-wrap gap-2">
+								{topic.joined_users.map((user) => (
+									<div
+										key={user.id}
+										className="px-3 py-1 bg-slate-700/50 rounded-full text-xs text-slate-300"
+									>
+										{user.name}
+									</div>
+								))}
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

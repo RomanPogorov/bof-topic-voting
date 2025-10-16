@@ -48,11 +48,17 @@ export default function TVDisplayPage() {
 					.from("topic_details")
 					.select("*")
 					.eq("bof_session_id", sessionId)
-					.eq("is_hidden", false)
-					.order("vote_count", { ascending: false });
+					.eq("is_hidden", false);
+
+				// Sort by joined_users count
+				const sortedData = (data || []).sort((a, b) => {
+					const aJoined = a.joined_users?.length || 0;
+					const bJoined = b.joined_users?.length || 0;
+					return bJoined - aJoined;
+				});
 
 				if (error) throw error;
-				setTopics(data || []);
+				setTopics(sortedData);
 				setLastUpdate(new Date());
 				setHasRecentActivity(true);
 				// Reset activity flag after 2 minutes
@@ -130,7 +136,10 @@ export default function TVDisplayPage() {
 		);
 	}
 
-	const maxVotes = Math.max(...topics.map((t) => t.vote_count), 1);
+	const maxJoined = Math.max(
+		...topics.map((t) => t.joined_users?.length || 0),
+		1,
+	);
 
 	return (
 		<div className="min-h-screen p-8">
@@ -183,7 +192,11 @@ export default function TVDisplayPage() {
 					<div className="flex items-center gap-2">
 						<TrendingUp className="h-5 w-5" />
 						<span>
-							{topics.reduce((sum, t) => sum + t.vote_count, 0)} total votes
+							{topics.reduce(
+								(sum, t) => sum + (t.joined_users?.length || 0),
+								0,
+							)}{" "}
+							total joined
 						</span>
 					</div>
 				</div>
@@ -218,7 +231,7 @@ export default function TVDisplayPage() {
 									<TopicBar
 										key={topic.topic_id}
 										topic={topic}
-										maxVotes={maxVotes}
+										maxVotes={maxJoined}
 										rank={index + 1}
 									/>
 								))}
