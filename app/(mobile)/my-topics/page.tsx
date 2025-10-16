@@ -54,7 +54,18 @@ export default function MyTopicsPage() {
 
 				// Fetch my topics
 				const topics = await TopicsService.getParticipantTopics(participant.id);
-				setMyTopics(topics);
+
+				// Sort my topics by session date (earliest first)
+				const sortedTopics = topics.sort((a, b) => {
+					const sessionA = sessionsMap.get(a.bof_session_id);
+					const sessionB = sessionsMap.get(b.bof_session_id);
+					if (!sessionA || !sessionB) return 0;
+					return (
+						new Date(sessionA.session_time).getTime() -
+						new Date(sessionB.session_time).getTime()
+					);
+				});
+				setMyTopics(sortedTopics);
 
 				// Fetch my votes
 				const votes = await VotesService.getParticipantVotes(participant.id);
@@ -71,7 +82,21 @@ export default function MyTopicsPage() {
 					TopicsService.getTopic(vote.topic_id),
 				);
 				const topicsData = await Promise.all(topicPromises);
-				setVotedTopics(topicsData.filter((t) => t !== null) as TopicDetails[]);
+				const filteredTopics = topicsData.filter(
+					(t) => t !== null,
+				) as TopicDetails[];
+
+				// Sort joined topics by session date (earliest first)
+				const sortedJoinedTopics = filteredTopics.sort((a, b) => {
+					const sessionA = sessionsMap.get(a.bof_session_id);
+					const sessionB = sessionsMap.get(b.bof_session_id);
+					if (!sessionA || !sessionB) return 0;
+					return (
+						new Date(sessionA.session_time).getTime() -
+						new Date(sessionB.session_time).getTime()
+					);
+				});
+				setVotedTopics(sortedJoinedTopics);
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			} finally {

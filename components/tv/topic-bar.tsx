@@ -14,7 +14,6 @@ interface TopicBarProps {
 
 export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 	const isTop5 = rank <= 5;
-	const joinedCount = topic.joined_users?.length || 0;
 	const [prevRank, setPrevRank] = useState(rank);
 	const [isRankChanging, setIsRankChanging] = useState(false);
 
@@ -30,17 +29,46 @@ export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 		}
 	}, [rank, prevRank]);
 
+	const joinedUsers = topic.joined_users || [];
+
+	// Add author to joined users if not already present
+	const allUsers = useMemo(() => {
+		const authorExists = joinedUsers.some(
+			(user) => user.id === topic.author_id,
+		);
+		if (!authorExists) {
+			// Add author as first user
+			const authorUser = {
+				id: topic.author_id,
+				name: topic.author_name,
+				company: topic.author_company,
+				avatar: topic.author_avatar,
+				is_vip: false,
+			};
+			return [authorUser, ...joinedUsers];
+		}
+		return joinedUsers;
+	}, [
+		joinedUsers,
+		topic.author_id,
+		topic.author_name,
+		topic.author_company,
+		topic.author_avatar,
+	]);
+
+	// Count includes author
+	const joinedCount = allUsers.length;
+
 	// Sort users: VIP first, then by name
 	const sortedUsers = useMemo(() => {
-		if (!topic.joined_users) return [];
-		return [...topic.joined_users].sort((a, b) => {
+		return [...allUsers].sort((a, b) => {
 			// VIP users first
 			if (a.is_vip && !b.is_vip) return -1;
 			if (!a.is_vip && b.is_vip) return 1;
 			// Then alphabetically
 			return a.name.localeCompare(b.name);
 		});
-	}, [topic.joined_users]);
+	}, [allUsers]);
 
 	// Calculate visible users - approximately 3 rows with flex-wrap
 	// Assuming average tag width ~140px and container width ~300px = ~2 tags per row

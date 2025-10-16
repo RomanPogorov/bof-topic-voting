@@ -50,11 +50,23 @@ export default function TVDisplayPage() {
 					.eq("bof_session_id", sessionId)
 					.eq("is_hidden", false);
 
-				// Sort by joined_users count
+				// Sort by joined_users count (including author)
 				const sortedData = (data || []).sort((a, b) => {
-					const aJoined = a.joined_users?.length || 0;
-					const bJoined = b.joined_users?.length || 0;
-					return bJoined - aJoined;
+					// Count author if not in joined_users
+					const aJoinedUsers = a.joined_users || [];
+					const bJoinedUsers = b.joined_users || [];
+
+					const aAuthorIncluded = aJoinedUsers.some(
+						(u: { id: string }) => u.id === a.author_id,
+					);
+					const bAuthorIncluded = bJoinedUsers.some(
+						(u: { id: string }) => u.id === b.author_id,
+					);
+
+					const aCount = aJoinedUsers.length + (aAuthorIncluded ? 0 : 1);
+					const bCount = bJoinedUsers.length + (bAuthorIncluded ? 0 : 1);
+
+					return bCount - aCount;
 				});
 
 				if (error) throw error;
@@ -187,10 +199,13 @@ export default function TVDisplayPage() {
 					<div className="flex items-center gap-2">
 						<TrendingUp className="h-5 w-5" />
 						<span>
-							{topics.reduce(
-								(sum, t) => sum + (t.joined_users?.length || 0),
-								0,
-							)}{" "}
+							{topics.reduce((sum, t) => {
+								const joinedUsers = t.joined_users || [];
+								const authorIncluded = joinedUsers.some(
+									(u: { id: string }) => u.id === t.author_id,
+								);
+								return sum + joinedUsers.length + (authorIncluded ? 0 : 1);
+							}, 0)}{" "}
 							total joined
 						</span>
 					</div>

@@ -62,7 +62,7 @@ export class TopicsService {
   ): Promise<Topic> {
     const token = localStorage.getItem("auth_token");
     if (!token) {
-      throw new Error("User not authenticated");
+      throw new Error("Session expired. Please scan your QR code again");
     }
 
     const resp = await fetch(`/api/admin/topics/${topicId}`, {
@@ -76,6 +76,12 @@ export class TopicsService {
 
     if (!resp.ok) {
       const { error } = await resp.json();
+
+      // Handle auth errors with user-friendly message
+      if (resp.status === 401 || resp.status === 403) {
+        throw new Error("Session expired. Please scan your QR code again");
+      }
+
       throw new Error(error || "Failed to update topic");
     }
 
@@ -88,7 +94,7 @@ export class TopicsService {
     // verify that the user is an admin.
     const token = localStorage.getItem("auth_token");
     if (!token) {
-      throw new Error("User not authenticated");
+      throw new Error("Session expired. Please scan your QR code again");
     }
 
     const resp = await fetch(`/api/admin/topics/${topicId}`, {
@@ -100,6 +106,12 @@ export class TopicsService {
 
     if (!resp.ok) {
       const { error } = await resp.json();
+
+      // Handle auth errors with user-friendly message
+      if (resp.status === 401 || resp.status === 403) {
+        throw new Error("Session expired. Please scan your QR code again");
+      }
+
       throw new Error(error || "Failed to delete topic");
     }
   }

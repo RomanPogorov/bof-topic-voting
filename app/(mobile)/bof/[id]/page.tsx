@@ -79,6 +79,16 @@ export default function BOFPage({ params }: BOFPageProps) {
 	};
 
 	const handleEdit = (topicId: string) => {
+		// Check if token exists before allowing edit
+		const token =
+			typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+		if (!token) {
+			toast.error("Session expired. Please scan your QR code again", {
+				duration: 4000,
+			});
+			return;
+		}
+
 		setTopicToEdit(topicId);
 		setEditDialogOpen(true);
 	};
@@ -90,6 +100,18 @@ export default function BOFPage({ params }: BOFPageProps) {
 
 	const confirmDelete = async () => {
 		if (!topicToDelete) return;
+
+		// Check if token exists before allowing delete
+		const token =
+			typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+		if (!token) {
+			toast.error("Сессия истекла. Пожалуйста, отсканируйте QR код снова", {
+				duration: 4000,
+			});
+			setDeleteDialogOpen(false);
+			setTopicToDelete(null);
+			return;
+		}
 
 		try {
 			await TopicsService.deleteTopicAsAdmin(topicToDelete);
