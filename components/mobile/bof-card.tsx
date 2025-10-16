@@ -47,7 +47,7 @@ function SimpleTopicRow({
 						</span>
 						<Users className="size-[16px] text-white" />
 						<span className="font-medium text-[14px] leading-[20px] text-white">
-							{topic.vote_count || 0}
+							{(topic.vote_count || 0) + 1}
 						</span>
 					</div>
 				) : hasJoined ? (
@@ -57,14 +57,14 @@ function SimpleTopicRow({
 						</span>
 						<Users className="size-[16px] text-white" />
 						<span className="font-medium text-[14px] leading-[20px] text-white">
-							{topic.vote_count || 0}
+							{(topic.vote_count || 0) + 1}
 						</span>
 					</div>
 				) : (
 					<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
 						<Users className="size-[16px] text-[#17171c]" />
 						<span className="font-medium text-[14px] leading-[20px] text-[#17171c]">
-							{topic.vote_count || 0}
+							{(topic.vote_count || 0) + 1}
 						</span>
 					</div>
 				)}

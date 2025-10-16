@@ -41,23 +41,41 @@ export function TopicCard({
 
 	const joinedUsers = topic.joined_users || [];
 
+	// Add author to joined users if not already present
+	const allUsers = useMemo(() => {
+		const authorExists = joinedUsers.some(
+			(user) => user.id === topic.author_id,
+		);
+		if (!authorExists) {
+			// Add author as first user
+			const authorUser = {
+				id: topic.author_id,
+				name: topic.author_name,
+				company: topic.author_company,
+				avatar: topic.author_avatar,
+				is_vip: false,
+			};
+			return [authorUser, ...joinedUsers];
+		}
+		return joinedUsers;
+	}, [
+		joinedUsers,
+		topic.author_id,
+		topic.author_name,
+		topic.author_company,
+		topic.author_avatar,
+	]);
+
 	// Sort users: VIP first, then by name
 	const sortedJoinedUsers = useMemo(() => {
-		return [...joinedUsers].sort((a, b) => {
+		return [...allUsers].sort((a, b) => {
 			// VIP users first
 			if (a.is_vip && !b.is_vip) return -1;
 			if (!a.is_vip && b.is_vip) return 1;
 			// Then alphabetically
 			return a.name.localeCompare(b.name);
 		});
-	}, [joinedUsers]);
-
-	const otherJoinedUsers = sortedJoinedUsers.filter(
-		(user) => user.id !== currentUserId,
-	);
-	const currentUserJoined = joinedUsers.some(
-		(user) => user.id === currentUserId,
-	);
+	}, [allUsers]);
 
 	// Lead карточка (твой топик)
 	if (isOwnTopic) {
@@ -74,7 +92,7 @@ export function TopicCard({
 					<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
 						<Users className="size-[16px] text-[#17171c]" />
 						<span className="font-medium text-[14px] leading-[20px] text-[#17171c]">
-							{joinedUsers.length}
+							{allUsers.length}
 						</span>
 					</div>
 					{onEdit && (
@@ -119,13 +137,11 @@ export function TopicCard({
 					</div>
 				)}
 
-				{/* Серая линия (только если есть joined пользователи) */}
-				{joinedUsers.length > 0 && (
-					<div className="w-full h-[1px] bg-zinc-200" />
-				)}
+				{/* Серая линия (только если есть пользователи) */}
+				{allUsers.length > 0 && <div className="w-full h-[1px] bg-zinc-200" />}
 
-				{/* Теги joined пользователей */}
-				{joinedUsers.length > 0 && (
+				{/* Теги пользователей */}
+				{allUsers.length > 0 && (
 					<div className="flex flex-wrap gap-[8px]">
 						{sortedJoinedUsers.map((user) => (
 							<div
@@ -158,7 +174,7 @@ export function TopicCard({
 				<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px] border border-zinc-200">
 					<Users className="size-[16px] text-[#17171c]" />
 					<span className="font-medium text-[14px] leading-[20px] text-[#17171c]">
-						{joinedUsers.length}
+						{allUsers.length}
 					</span>
 				</div>
 			</div>
@@ -179,29 +195,39 @@ export function TopicCard({
 				</div>
 			)}
 
-			{/* Серая линия (только если есть joined пользователи) */}
-			{joinedUsers.length > 0 && <div className="w-full h-[1px] bg-zinc-200" />}
+			{/* Серая линия (только если есть пользователи) */}
+			{allUsers.length > 0 && <div className="w-full h-[1px] bg-zinc-200" />}
 
-			{/* Теги joined пользователей */}
-			{joinedUsers.length > 0 && (
+			{/* Теги пользователей */}
+			{allUsers.length > 0 && (
 				<div className="flex flex-wrap gap-[8px]">
-					{otherJoinedUsers.map((user) => (
-						<div
-							key={user.id}
-							className="bg-[#f5f5f6] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center"
-						>
-							<span className="font-normal text-[13px] leading-[16.5px] text-[#52525b]">
-								{user.name}
-							</span>
-						</div>
-					))}
-					{currentUserJoined && (
-						<div className="bg-[#ea4a35] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center">
-							<span className="font-normal text-[13px] leading-[16.5px] text-white">
-								You
-							</span>
-						</div>
-					)}
+					{sortedJoinedUsers.map((user) => {
+						const isCurrentUser = user.id === currentUserId;
+
+						if (isCurrentUser) {
+							return (
+								<div
+									key={user.id}
+									className="bg-[#ea4a35] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center"
+								>
+									<span className="font-normal text-[13px] leading-[16.5px] text-white">
+										You
+									</span>
+								</div>
+							);
+						}
+
+						return (
+							<div
+								key={user.id}
+								className="bg-[#f5f5f6] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center"
+							>
+								<span className="font-normal text-[13px] leading-[16.5px] text-[#52525b]">
+									{user.name}
+								</span>
+							</div>
+						);
+					})}
 				</div>
 			)}
 
