@@ -221,7 +221,7 @@ export default function TVDisplayPage() {
 							will be discussed
 						</div>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-							<AnimatePresence mode="popLayout">
+							<AnimatePresence>
 								{topics.map((topic, index) => (
 									<TopicBar
 										key={topic.topic_id}

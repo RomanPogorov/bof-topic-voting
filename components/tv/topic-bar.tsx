@@ -3,7 +3,7 @@
 import type { TopicDetails } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 import { Users } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 interface TopicBarProps {
@@ -15,6 +15,20 @@ interface TopicBarProps {
 export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 	const isTop5 = rank <= 5;
 	const joinedCount = topic.joined_users?.length || 0;
+	const [prevRank, setPrevRank] = useState(rank);
+	const [isRankChanging, setIsRankChanging] = useState(false);
+
+	// Detect rank change
+	useEffect(() => {
+		if (prevRank !== rank) {
+			setIsRankChanging(true);
+			const timer = setTimeout(() => {
+				setIsRankChanging(false);
+				setPrevRank(rank);
+			}, 800);
+			return () => clearTimeout(timer);
+		}
+	}, [rank, prevRank]);
 
 	// Sort users: VIP first, then by name
 	const sortedUsers = useMemo(() => {
@@ -37,18 +51,26 @@ export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 
 	return (
 		<motion.div
+			layout
 			layoutId={`topic-${topic.topic_id}`}
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, scale: 0.95 }}
+			initial={{ opacity: 0, scale: 0.8 }}
+			animate={{ opacity: 1, scale: 1 }}
+			exit={{ opacity: 0, scale: 0.8 }}
 			transition={{
-				layout: { type: "spring", stiffness: 300, damping: 30 },
-				opacity: { duration: 0.3 },
+				layout: {
+					type: "spring",
+					stiffness: 500,
+					damping: 35,
+					mass: 1,
+				},
+				opacity: { duration: 0.2 },
+				scale: { duration: 0.2 },
 			}}
 			className={cn(
-				"relative flex flex-col overflow-hidden rounded-xl backdrop-blur-sm transition-all duration-500",
+				"relative flex flex-col overflow-hidden rounded-xl backdrop-blur-sm",
 				"w-full min-h-[280px] p-6",
 				isNew && "animate-pulse",
+				isRankChanging && "ring-4 ring-blue-400/50",
 				isTop5
 					? "bg-[rgba(2,3,4,0.1)] border border-[#d79a06]"
 					: "bg-[#1d283a] border-2 border-[rgba(255,255,255,0.1)]",
@@ -57,7 +79,11 @@ export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 			{/* Header - Rank Badge + Joined Count */}
 			<div className="flex items-center justify-between mb-8">
 				{/* Rank Badge */}
-				<div
+				<motion.div
+					key={rank}
+					initial={{ scale: 1.2, rotate: 10 }}
+					animate={{ scale: 1, rotate: 0 }}
+					transition={{ type: "spring", stiffness: 500, damping: 25 }}
 					className={cn(
 						"flex h-12 w-12 items-center justify-center rounded-full font-bold text-xl shrink-0",
 						isTop5
@@ -66,7 +92,7 @@ export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 					)}
 				>
 					{rank}
-				</div>
+				</motion.div>
 
 				{/* Joined Count Badge */}
 				<div className="bg-[rgba(255,255,255,0.1)] flex items-center gap-1.5 px-3 py-2 rounded-full h-[48px]">
