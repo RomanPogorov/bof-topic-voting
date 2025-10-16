@@ -81,7 +81,7 @@ export function CreateTopicSheet({
 				<button
 					type="button"
 					disabled={disabled}
-					className="bg-[#2378e1] w-full flex gap-[8px] items-center justify-center px-[16px] py-[8px] rounded-[6px] hover:bg-[#1e68c9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					className="bg-[#2378e1] w-full h-[40px] flex gap-[8px] items-center justify-center px-[16px] rounded-[6px] hover:bg-[#1e68c9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					<Plus className="size-[16px] text-[#f9f9f9]" />
 					<span className="font-medium text-[14px] leading-[20px] text-[#f9f9f9]">

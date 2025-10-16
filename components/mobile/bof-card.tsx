@@ -26,10 +26,10 @@ function SimpleTopicRow({
 		topic.joined_users.some((v) => v.id === participantId);
 
 	return (
-		<div className="flex items-center gap-[8px] bg-[#f5f5f6] rounded-[6px] p-[8px]">
+		<div className="flex items-center gap-[8px] bg-[#f5f5f6] rounded-[6px] px-3 py-2">
 			<div className="flex-1 min-w-0 flex flex-col gap-[4px]">
 				<div className="w-full">
-					<p className="text-[12px] leading-[16px] text-[#909098]">
+					<p className="text-[14px] leading-[20px] text-[#909098]">
 						{topic.author_name}
 					</p>
 				</div>
@@ -42,28 +42,28 @@ function SimpleTopicRow({
 			<div className="flex items-center gap-[4px] shrink-0">
 				{isOwnTopic ? (
 					<div className="bg-[#2378e1] flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
-						<span className="font-medium text-[12px] leading-[18px] text-white">
+						<span className="font-medium text-[14px] leading-[20px] text-white">
 							Lead
 						</span>
 						<Users className="size-[16px] text-white" />
-						<span className="font-medium text-[12px] leading-[16px] text-white">
+						<span className="font-medium text-[14px] leading-[20px] text-white">
 							{topic.vote_count || 0}
 						</span>
 					</div>
 				) : hasJoined ? (
 					<div className="bg-[#ea4a35] flex gap-[4px] items-center px-[8px] py-[4px] rounded-[6px]">
-						<span className="font-medium text-[12px] leading-[18px] text-white">
+						<span className="font-medium text-[14px] leading-[20px] text-white">
 							Joined
 						</span>
 						<Users className="size-[16px] text-white" />
-						<span className="font-medium text-[12px] leading-[16px] text-white">
+						<span className="font-medium text-[14px] leading-[20px] text-white">
 							{topic.vote_count || 0}
 						</span>
 					</div>
 				) : (
 					<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
 						<Users className="size-[16px] text-[#17171c]" />
-						<span className="font-medium text-[12px] leading-[16px] text-[#17171c]">
+						<span className="font-medium text-[14px] leading-[20px] text-[#17171c]">
 							{topic.vote_count || 0}
 						</span>
 					</div>

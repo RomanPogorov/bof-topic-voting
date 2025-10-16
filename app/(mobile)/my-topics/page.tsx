@@ -130,7 +130,7 @@ export default function MyTopicsPage() {
 									</p>
 								</div>
 								<div className="w-[107px] flex flex-col items-center">
-									<p className="font-normal text-[12px] leading-[16px] text-center text-zinc-500 whitespace-pre">
+									<p className="font-normal text-[14px] leading-[20px] text-center text-zinc-500 whitespace-pre">
 										Topics Created
 									</p>
 								</div>
@@ -146,7 +146,7 @@ export default function MyTopicsPage() {
 									</p>
 								</div>
 								<div className="w-[107px] flex flex-col items-center">
-									<p className="font-normal text-[12px] leading-[16px] text-center text-zinc-500 whitespace-pre">
+									<p className="font-normal text-[14px] leading-[20px] text-center text-zinc-500 whitespace-pre">
 										Topics Joined
 									</p>
 								</div>
@@ -180,19 +180,23 @@ export default function MyTopicsPage() {
 										>
 											<div className="bg-white rounded-[16px] p-[16px] overflow-clip w-full">
 												<div className="flex flex-col gap-[8px] w-full">
-													{/* Title and session info */}
-													<div className="flex items-center justify-between gap-[8px] w-full">
-														<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
-															{topic.title}
-														</h3>
-														{session && (
-															<p className="font-normal text-[14px] leading-[20px] text-zinc-500 whitespace-nowrap shrink-0">
+													{/* Session info */}
+													{session && (
+														<div className="w-full flex justify-start">
+															<p className="font-normal text-[14px] leading-[20px] text-zinc-500 whitespace-nowrap">
 																{formatBOFSessionInfo(
 																	session.session_time,
 																	session.session_number,
 																)}
 															</p>
-														)}
+														</div>
+													)}
+
+													{/* Title */}
+													<div className="w-full">
+														<h3 className="font-medium text-[16px] leading-[22px] tracking-[-0.32px] text-zinc-950">
+															{topic.title}
+														</h3>
 													</div>
 
 													{/* Description */}
@@ -238,20 +242,24 @@ export default function MyTopicsPage() {
 										>
 											<div className="bg-white rounded-[16px] p-[16px] overflow-clip w-full">
 												<div className="flex flex-col gap-[8px] w-full">
-													{/* Author and Session Info */}
-													<div className="flex items-center justify-between w-full">
+													{/* Author */}
+													<div className="w-full">
 														<span className="font-normal text-[13px] leading-[18px] text-zinc-500">
 															Author: {topic.author_name}
 														</span>
-														{session && (
+													</div>
+
+													{/* Session Info */}
+													{session && (
+														<div className="w-full">
 															<p className="font-normal text-[14px] leading-[20px] text-zinc-500">
 																{formatBOFSessionInfo(
 																	session.session_time,
 																	session.session_number,
 																)}
 															</p>
-														)}
-													</div>
+														</div>
+													)}
 
 													{/* Title */}
 													<div className="w-full flex flex-col">

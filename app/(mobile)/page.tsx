@@ -83,7 +83,7 @@ export default function HomePage() {
 								</span>
 							</p>
 							<p className="font-normal text-[16px] leading-[20px] text-zinc-500">
-								Join topic you like!
+								Join topic you like, or submit your own!
 							</p>
 						</CardContent>
 					</Card>

@@ -57,7 +57,7 @@ export function BottomNav() {
 									isActive ? "h-[22px] w-[22px]" : "h-5 w-5",
 								)}
 							/>
-							<span className="text-[12px] leading-[16px] font-medium">
+							<span className="text-[14px] leading-[20px] font-medium">
 								{tab.label}
 							</span>
 						</Link>

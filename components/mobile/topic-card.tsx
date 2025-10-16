@@ -73,7 +73,7 @@ export function TopicCard({
 					<div className="flex-1" />
 					<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px]">
 						<Users className="size-[16px] text-[#17171c]" />
-						<span className="font-medium text-[12px] leading-[16px] text-[#17171c]">
+						<span className="font-medium text-[14px] leading-[20px] text-[#17171c]">
 							{joinedUsers.length}
 						</span>
 					</div>
@@ -157,7 +157,7 @@ export function TopicCard({
 				</span>
 				<div className="bg-white flex gap-[4px] items-center px-[8px] py-[4px] rounded-[9999px] border border-zinc-200">
 					<Users className="size-[16px] text-[#17171c]" />
-					<span className="font-medium text-[12px] leading-[16px] text-[#17171c]">
+					<span className="font-medium text-[14px] leading-[20px] text-[#17171c]">
 						{joinedUsers.length}
 					</span>
 				</div>
@@ -206,41 +206,43 @@ export function TopicCard({
 			)}
 
 			{/* Кнопка Join/Joined */}
-			{isJoined ? (
-				<div className="h-[40px] w-full rounded-[6px] flex items-center justify-center gap-[4px] bg-[rgba(234,74,53,0.1)]">
-					<Users className="size-[16px] text-[#ea4a35]" />
-					<span className="font-semibold text-[12px] leading-[16px] text-[#ea4a35]">
-						You Joined
-					</span>
-					<Check className="size-[16px] text-[#ea4a35]" />
-				</div>
-			) : (
-				<button
-					type="button"
-					onClick={handleJoin}
-					disabled={disabled || isThisTopicJoining}
-					className={`h-[40px] w-full rounded-[6px] flex items-center justify-center gap-[4px] transition-all ${
-						disabled
-							? "bg-[#f5f5f6] cursor-not-allowed"
-							: "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
-					}`}
-				>
-					{isThisTopicJoining ? (
-						<Loader2 className="size-[16px] animate-spin text-white" />
-					) : (
-						<>
-							<Users
-								className={`size-[16px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
-							/>
-							<span
-								className={`font-medium text-[12px] leading-[16px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
-							>
-								{isLeading ? "You can't join others while leading" : "Join"}
-							</span>
-						</>
-					)}
-				</button>
-			)}
+			<div className="mt-[8px]">
+				{isJoined ? (
+					<div className="h-[40px] w-full rounded-[6px] flex items-center justify-center gap-[4px] bg-[rgba(234,74,53,0.1)]">
+						<Users className="size-[16px] text-[#ea4a35]" />
+						<span className="font-semibold text-[14px] leading-[20px] text-[#ea4a35]">
+							You Joined
+						</span>
+						<Check className="size-[16px] text-[#ea4a35]" />
+					</div>
+				) : (
+					<button
+						type="button"
+						onClick={handleJoin}
+						disabled={disabled || isThisTopicJoining}
+						className={`h-[40px] w-full rounded-[6px] flex items-center justify-center gap-[4px] transition-all ${
+							disabled
+								? "bg-[#f5f5f6] cursor-not-allowed"
+								: "bg-[#ea4a35] hover:bg-[#ea4a35]/90"
+						}`}
+					>
+						{isThisTopicJoining ? (
+							<Loader2 className="size-[16px] animate-spin text-white" />
+						) : (
+							<>
+								<Users
+									className={`size-[16px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
+								/>
+								<span
+									className={`font-medium text-[14px] leading-[20px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
+								>
+									{isLeading ? "You can't join others while leading" : "Join"}
+								</span>
+							</>
+						)}
+					</button>
+				)}
+			</div>
 		</div>
 	);
 }
