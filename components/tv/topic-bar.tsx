@@ -2,41 +2,38 @@
 
 import type { TopicDetails } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
-import { TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Users } from "lucide-react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 
 interface TopicBarProps {
 	topic: TopicDetails;
-	maxVotes: number;
 	rank: number;
 	isNew?: boolean;
 }
 
-export function TopicBar({
-	topic,
-	maxVotes: maxJoined,
-	rank,
-	isNew,
-}: TopicBarProps) {
-	const [width, setWidth] = useState(0);
-	const joinedCount = topic.joined_users?.length || 0;
-	const percentage = maxJoined > 0 ? (joinedCount / maxJoined) * 100 : 0;
-
-	useEffect(() => {
-		// Animate bar on mount
-		const timer = setTimeout(() => setWidth(percentage), 100);
-		return () => clearTimeout(timer);
-	}, [percentage]);
-
+export function TopicBar({ topic, rank, isNew }: TopicBarProps) {
 	const isTop5 = rank <= 5;
-	const barColor = isTop5
-		? rank === 1
-			? "bg-gradient-to-r from-yellow-500 to-yellow-400"
-			: rank === 2
-				? "bg-gradient-to-r from-gray-400 to-gray-300"
-				: "bg-gradient-to-r from-orange-600 to-orange-500"
-		: "bg-gradient-to-r from-blue-600 to-blue-500";
+	const joinedCount = topic.joined_users?.length || 0;
+
+	// Sort users: VIP first, then by name
+	const sortedUsers = useMemo(() => {
+		if (!topic.joined_users) return [];
+		return [...topic.joined_users].sort((a, b) => {
+			// VIP users first
+			if (a.is_vip && !b.is_vip) return -1;
+			if (!a.is_vip && b.is_vip) return 1;
+			// Then alphabetically
+			return a.name.localeCompare(b.name);
+		});
+	}, [topic.joined_users]);
+
+	// Calculate visible users - approximately 3 rows with flex-wrap
+	// Assuming average tag width ~140px and container width ~300px = ~2 tags per row
+	// 3 rows = ~6 tags, leave space for "+X more"
+	const maxVisibleUsers = 5;
+	const visibleUsers = sortedUsers.slice(0, maxVisibleUsers);
+	const remainingCount = Math.max(0, joinedCount - maxVisibleUsers);
 
 	return (
 		<motion.div
@@ -49,85 +46,77 @@ export function TopicBar({
 				opacity: { duration: 0.3 },
 			}}
 			className={cn(
-				"group relative overflow-hidden rounded-xl bg-slate-800/50 p-6 backdrop-blur-sm transition-all duration-500 flex flex-col",
-				"w-[calc(20%-1.2rem)] min-h-[280px]",
+				"relative flex flex-col overflow-hidden rounded-xl backdrop-blur-sm transition-all duration-500",
+				"w-full min-h-[280px] p-6",
 				isNew && "animate-pulse",
-				isTop5 && "ring-2 ring-yellow-500/30",
-				!isTop5 && "ring-2 ring-white/10",
+				isTop5
+					? "bg-[rgba(2,3,4,0.1)] border border-[#d79a06]"
+					: "bg-[#1d283a] border-2 border-[rgba(255,255,255,0.1)]",
 			)}
 		>
-			{/* Rank Badge */}
-			<div className="absolute top-4 left-4 z-10">
+			{/* Header - Rank Badge + Joined Count */}
+			<div className="flex items-center justify-between mb-8">
+				{/* Rank Badge */}
 				<div
 					className={cn(
-						"flex h-12 w-12 items-center justify-center rounded-full font-bold text-xl",
+						"flex h-12 w-12 items-center justify-center rounded-full font-bold text-xl shrink-0",
 						isTop5
-							? "bg-gradient-to-br from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/50"
+							? "bg-gradient-to-br from-yellow-500 to-yellow-600 text-[#131b2c]"
 							: "bg-slate-700 text-slate-300",
 					)}
 				>
 					{rank}
 				</div>
+
+				{/* Joined Count Badge */}
+				<div className="bg-[rgba(255,255,255,0.1)] flex items-center gap-1.5 px-3 py-2 rounded-full h-[48px]">
+					<Users className="h-[22px] w-[22px] text-[rgba(255,255,255,0.9)]" />
+					<span className="font-bold text-[26px] leading-[34px] text-[rgba(255,255,255,0.9)]">
+						{joinedCount}
+					</span>
+				</div>
 			</div>
 
 			{/* Content */}
-			<div className="relative flex flex-col h-full pt-16">
-				{/* Author */}
-				<p className="mb-2 text-sm text-slate-400 line-clamp-1">
-					by {topic.author_name || "Anonymous"}
-					{topic.author_company && ` (${topic.author_company})`}
-				</p>
+			<div className="flex flex-col gap-6">
+				{/* Author + Title Container */}
+				<div className="h-[102px] relative">
+					{/* Author */}
+					<div className="absolute left-0 top-0 w-full">
+						<p className="text-sm leading-5 text-slate-400">
+							by {topic.author_name || "Anonymous"}
+							{topic.author_company && ` (${topic.author_company})`}
+						</p>
+					</div>
 
-				<div className="mb-3 flex items-start justify-between gap-2">
-					<h3 className="text-lg font-semibold text-white line-clamp-3 leading-tight flex-1">
-						{topic.title}
-					</h3>
-					{isNew && (
-						<div className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-1 text-xs font-medium text-green-400 shrink-0">
-							<TrendingUp className="h-3 w-3" />
-							NEW
-						</div>
-					)}
+					{/* Title */}
+					<div className="absolute left-0 top-[28px] w-full">
+						<h3 className="font-medium text-lg leading-6 text-white line-clamp-3 h-[72px] overflow-hidden">
+							{topic.title}
+						</h3>
+					</div>
 				</div>
 
-				{/* Joined Count & Bar */}
-				<div className="mt-auto space-y-2">
-					<div className="flex items-center justify-between text-sm">
-						<span className="text-slate-400">Joined</span>
-						<span className="text-3xl font-bold text-white">
-							{topic.joined_users?.length || 0}
-						</span>
-					</div>
-
-					{/* Animated Progress Bar */}
-					<div className="relative h-3 overflow-hidden rounded-full bg-slate-700">
+				{/* Joined Users Tags - Fixed height container for 3 rows */}
+				<div className="h-[88px] flex flex-wrap content-start gap-2 overflow-hidden">
+					{visibleUsers.map((user) => (
 						<div
-							className={cn(
-								"absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out",
-								barColor,
-							)}
-							style={{ width: `${width}%` }}
+							key={user.id}
+							className="bg-[rgba(51,65,85,0.5)] px-3 py-1 rounded-full h-6 flex items-center"
 						>
-							{/* Shimmer effect */}
-							<div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+							<span className="text-xs leading-4 text-slate-300 whitespace-nowrap">
+								{user.name}
+							</span>
 						</div>
-					</div>
+					))}
 
-					{/* Joined Users - fixed height area */}
-					<div className="min-h-[60px] pt-3">
-						{topic.joined_users && topic.joined_users.length > 0 && (
-							<div className="flex flex-wrap gap-2">
-								{topic.joined_users.map((user) => (
-									<div
-										key={user.id}
-										className="px-3 py-1 bg-slate-700/50 rounded-full text-xs text-slate-300"
-									>
-										{user.name}
-									</div>
-								))}
-							</div>
-						)}
-					</div>
+					{remainingCount > 0 && (
+						<div className="bg-[#aebacb] px-3 py-1 rounded-full h-6 flex items-center">
+							<span className="text-xs leading-4 font-medium text-[#162030] whitespace-nowrap">
+								+{remainingCount} more
+							</span>
+						</div>
+					)}
 				</div>
 			</div>
 		</motion.div>

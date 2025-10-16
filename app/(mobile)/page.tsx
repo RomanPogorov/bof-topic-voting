@@ -76,14 +76,14 @@ export default function HomePage() {
 				{participant && (
 					<Card className="bg-white rounded-[16px] shadow-none border-none">
 						<CardContent className="px-4 py-2 flex flex-col gap-1 text-center">
-							<p className="font-medium text-[20px] leading-[24px] text-zinc-950">
-								Hi and welcome,{" "}
+							<p className="font-medium tex-[20px] leading-[24px] text-zinc-950">
+								Welcome,{" "}
 								<span className="font-bold text-zinc-900">
 									{participant.name}!
 								</span>
 							</p>
 							<p className="font-normal text-[16px] leading-[20px] text-zinc-500">
-								It's time to vote!
+								Join topic you like!
 							</p>
 						</CardContent>
 					</Card>

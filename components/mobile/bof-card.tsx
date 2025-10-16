@@ -108,7 +108,7 @@ export function BOFCard({ session }: BOFCardProps) {
 				<div className="p-[16px] flex flex-col gap-[16px]">
 					{/* Header */}
 					<div className="flex items-center gap-[16px]">
-						<h3 className="font-bold text-[20px] leading-[28px] text-zinc-950 flex-1">
+						<h3 className="font-bold text-[20px] leading-[28px] tracking-[-0.02em] text-zinc-950 flex-1">
 							{session.title}
 						</h3>
 						<div className="flex items-center gap-[8px] shrink-0">

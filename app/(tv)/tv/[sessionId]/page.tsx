@@ -136,11 +136,6 @@ export default function TVDisplayPage() {
 		);
 	}
 
-	const maxJoined = Math.max(
-		...topics.map((t) => t.joined_users?.length || 0),
-		1,
-	);
-
 	return (
 		<div className="min-h-screen p-8">
 			{/* Header */}
@@ -225,13 +220,12 @@ export default function TVDisplayPage() {
 							</span>{" "}
 							will be discussed
 						</div>
-						<div className="flex flex-wrap gap-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
 							<AnimatePresence mode="popLayout">
 								{topics.map((topic, index) => (
 									<TopicBar
 										key={topic.topic_id}
 										topic={topic}
-										maxVotes={maxJoined}
 										rank={index + 1}
 									/>
 								))}

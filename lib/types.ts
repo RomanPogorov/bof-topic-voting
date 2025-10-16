@@ -10,6 +10,7 @@ export interface Participant {
   auth_token: string;
   avatar_url?: string;
   is_blocked: boolean;
+  is_vip: boolean;
   role: "admin" | "participant";
   created_at: string;
   updated_at: string;
@@ -112,6 +113,7 @@ export interface TopicDetails {
     name: string;
     company?: string;
     avatar?: string;
+    is_vip?: boolean;
   }>;
   created_at: string;
   updated_at: string;
