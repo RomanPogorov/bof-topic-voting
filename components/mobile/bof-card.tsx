@@ -104,7 +104,7 @@ export function BOFCard({ session }: BOFCardProps) {
 
 	return (
 		<Link href={ROUTES.BOF(session.id)}>
-			<div className="bg-white rounded-[16px] flex flex-col cursor-pointer hover:shadow-md transition-shadow">
+			<div className="bg-white rounded-[16px] flex flex-col cursor-pointer">
 				<div className="p-[16px] flex flex-col gap-[16px]">
 					{/* Header */}
 					<div className="flex items-center gap-[16px]">
