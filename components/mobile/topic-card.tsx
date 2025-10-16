@@ -2,6 +2,7 @@
 
 import type { TopicDetails } from "@/lib/types";
 import { Loader2, Users, Pencil, Trash2, Check } from "lucide-react";
+import { useMemo } from "react";
 
 interface TopicCardProps {
 	topic: TopicDetails;
@@ -39,7 +40,19 @@ export function TopicCard({
 	};
 
 	const joinedUsers = topic.joined_users || [];
-	const otherJoinedUsers = joinedUsers.filter(
+
+	// Sort users: VIP first, then by name
+	const sortedJoinedUsers = useMemo(() => {
+		return [...joinedUsers].sort((a, b) => {
+			// VIP users first
+			if (a.is_vip && !b.is_vip) return -1;
+			if (!a.is_vip && b.is_vip) return 1;
+			// Then alphabetically
+			return a.name.localeCompare(b.name);
+		});
+	}, [joinedUsers]);
+
+	const otherJoinedUsers = sortedJoinedUsers.filter(
 		(user) => user.id !== currentUserId,
 	);
 	const currentUserJoined = joinedUsers.some(
@@ -114,7 +127,7 @@ export function TopicCard({
 				{/* Теги joined пользователей */}
 				{joinedUsers.length > 0 && (
 					<div className="flex flex-wrap gap-[8px]">
-						{joinedUsers.map((user) => (
+						{sortedJoinedUsers.map((user) => (
 							<div
 								key={user.id}
 								className="bg-[#f5f5f6] px-[8px] py-[4px] rounded-full h-[25px] inline-flex items-center"
