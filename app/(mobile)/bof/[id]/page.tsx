@@ -218,6 +218,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 										onEdit={isOwnTopic ? handleEdit : undefined}
 										onDelete={isOwnTopic ? handleDelete : undefined}
 										currentUserId={participant?.id}
+										isLeading={hasCreatedTopic}
 									/>
 								);
 							})}

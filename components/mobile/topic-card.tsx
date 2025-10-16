@@ -14,6 +14,7 @@ interface TopicCardProps {
 	onEdit?: (topicId: string) => void;
 	onDelete?: (topicId: string) => void;
 	currentUserId?: string;
+	isLeading?: boolean;
 }
 
 export function TopicCard({
@@ -26,6 +27,7 @@ export function TopicCard({
 	onEdit,
 	onDelete,
 	currentUserId,
+	isLeading,
 }: TopicCardProps) {
 	const isThisTopicJoining = joiningTopicId === topic.topic_id;
 
@@ -220,7 +222,7 @@ export function TopicCard({
 							<span
 								className={`font-medium text-[12px] leading-[16px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
 							>
-								Join
+								{isLeading ? "You can't join others while leading" : "Join"}
 							</span>
 						</>
 					)}
