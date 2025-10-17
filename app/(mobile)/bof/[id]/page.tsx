@@ -3,6 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useBOFDetails } from "@/lib/hooks/useBOFDetails";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -15,8 +16,6 @@ import { ArrowLeft, RefreshCw } from "lucide-react";
 import { VotesService } from "@/lib/services/votes.service";
 import { TopicsService } from "@/lib/services/topics.service";
 import { toast } from "sonner";
-import Link from "next/link";
-import { ROUTES } from "@/lib/constants/routes";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -34,6 +33,7 @@ interface BOFPageProps {
 
 export default function BOFPage({ params }: BOFPageProps) {
 	const { id } = use(params);
+	const router = useRouter();
 	const { participant } = useAuth();
 	const { bof, topics, userVote, isLoading, error, refresh } = useBOFDetails(
 		id,
@@ -147,11 +147,13 @@ export default function BOFPage({ params }: BOFPageProps) {
 			<div className="backdrop-blur-[2px] bg-[rgba(255,255,255,0.95)] border-b border-zinc-200 sticky top-0 w-full z-[2] px-[16px] pt-[16px] pb-[17px]">
 				<div className="flex gap-[12px] items-center w-full">
 					{/* Back button */}
-					<Link href={ROUTES.HOME}>
-						<div className="bg-[#f5f5f6] flex items-center justify-center rounded-[38px] size-[44px] shrink-0">
-							<ArrowLeft className="h-4 w-4" />
-						</div>
-					</Link>
+					<button
+						type="button"
+						onClick={() => router.back()}
+						className="bg-[#f5f5f6] flex items-center justify-center rounded-[38px] size-[44px] shrink-0"
+					>
+						<ArrowLeft className="h-4 w-4" />
+					</button>
 
 					{/* Title & Subtitle */}
 					<div className="flex-1 flex flex-col min-w-0">
