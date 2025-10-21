@@ -28,15 +28,22 @@ export function PanelDiscussionCard({
 				</div>
 			</div>
 
-			{/* Title */}
-			<div className="w-full">
-				<h3 className="font-semibold text-[16px] leading-[22px] text-zinc-950">
-					{title}
-				</h3>
-			</div>
+		{/* Title */}
+		<div className="w-full">
+			<h3 className="font-semibold text-[16px] leading-[22px] text-zinc-950">
+				{title}
+			</h3>
+		</div>
 
-			{/* Participants */}
-			<div className="flex flex-wrap gap-[8px]">
+		{/* Moderators label */}
+		<div className="w-full">
+			<p className="font-normal text-[13px] leading-[18px] text-zinc-500">
+				Moderators
+			</p>
+		</div>
+
+		{/* Participants */}
+		<div className="flex flex-wrap gap-[8px]">
 				{participants.map((participant) => (
 					<div
 						key={participant}
@@ -51,4 +58,3 @@ export function PanelDiscussionCard({
 		</div>
 	);
 }
-
