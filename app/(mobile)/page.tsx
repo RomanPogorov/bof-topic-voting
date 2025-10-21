@@ -69,7 +69,7 @@ export default function HomePage() {
 	// Group sessions by date
 	const sessionsByDate = sessions.reduce(
 		(acc, session) => {
-			const dateKey = formatDate(session.session_time, "MMM, d");
+			const dateKey = formatDate(session.session_time, "MMMM d");
 			if (!acc[dateKey]) {
 				acc[dateKey] = [];
 			}

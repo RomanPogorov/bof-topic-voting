@@ -14,7 +14,7 @@ export function PanelDiscussionCard({
 	participants,
 }: PanelDiscussionCardProps) {
 	return (
-		<div className="rounded-[16px] p-[16px] flex flex-col gap-[16px]">
+		<div className="bg-white/55 rounded-[16px] p-[16px] flex flex-col gap-[16px]">
 			{/* Header */}
 			<div className="flex items-center justify-between w-full">
 				<h2 className="font-bold text-[20px] leading-[28px] text-zinc-950">
@@ -28,22 +28,22 @@ export function PanelDiscussionCard({
 				</div>
 			</div>
 
-		{/* Title */}
-		<div className="w-full">
-			<h3 className="font-semibold text-[16px] leading-[22px] text-zinc-950">
-				{title}
-			</h3>
-		</div>
+			{/* Title */}
+			<div className="w-full">
+				<h3 className="font-semibold text-[16px] leading-[22px] text-zinc-950">
+					{title}
+				</h3>
+			</div>
 
-		{/* Moderators label */}
-		<div className="w-full">
-			<p className="font-normal text-[13px] leading-[18px] text-zinc-500">
-				Moderators
-			</p>
-		</div>
+			{/* Moderators label */}
+			<div className="w-full">
+				<p className="font-normal text-[13px] leading-[18px] text-zinc-500">
+					Moderators
+				</p>
+			</div>
 
-		{/* Participants */}
-		<div className="flex flex-wrap gap-[8px]">
+			{/* Participants */}
+			<div className="flex flex-wrap gap-[8px]">
 				{participants.map((participant) => (
 					<div
 						key={participant}
