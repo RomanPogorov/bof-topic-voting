@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/client";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const { data: participants, error } = await supabase
+    const { data: participants, error } = await supabaseAdmin
       .from("participants")
       .select("id, name, auth_token")
       .eq("is_blocked", false)
@@ -32,4 +32,3 @@ export async function GET() {
     );
   }
 }
-

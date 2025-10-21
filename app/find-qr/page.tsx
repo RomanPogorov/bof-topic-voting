@@ -40,14 +40,19 @@ export default function FindQRPage() {
 	}, []);
 
 	const filteredParticipants = useMemo(() => {
+		// Show nothing until user starts typing
 		if (!searchQuery.trim()) {
-			return participants;
+			return [];
 		}
 
 		const query = searchQuery.toLowerCase().trim();
-		return participants.filter((participant) =>
-			participant.name.toLowerCase().includes(query),
-		);
+		const queryWords = query.split(/\s+/); // Разбиваем на слова
+
+		return participants.filter((participant) => {
+			const name = participant.name.toLowerCase();
+			// Все слова из запроса должны быть в имени
+			return queryWords.every((word) => name.includes(word));
+		});
 	}, [participants, searchQuery]);
 
 	const handleLogin = (authToken: string) => {
@@ -123,7 +128,7 @@ export default function FindQRPage() {
 							<p className="text-[16px] leading-[24px] text-zinc-500">
 								{searchQuery
 									? "No participants found. Try a different search."
-									: "No participants available."}
+									: "Start typing your name to find your account"}
 							</p>
 						</div>
 					) : (
@@ -152,4 +157,3 @@ export default function FindQRPage() {
 		</div>
 	);
 }
-
