@@ -55,7 +55,7 @@ export default function HomePage() {
 				<div className="flex items-center pb-4 pt-12">
 					<div className="flex-1 flex flex-col">
 						<h1 className="font-bold text-[30px] leading-[36px] text-zinc-950">
-							BOF Sessions
+							HL7 FHIR CAMP 2025
 						</h1>
 						<p className="font-medium text-[16px] leading-[24px] text-[#ea4a35]">
 							by Health Samurai
