@@ -243,7 +243,9 @@ export default function BOFPage({ params }: BOFPageProps) {
 										isJoined={userVote?.topic_id === topic.topic_id}
 										onJoin={handleJoin}
 										isJoining={isJoining}
-										disabled={!participant || hasCreatedTopic || isJoiningDisabled}
+										disabled={
+											!participant || hasCreatedTopic || isJoiningDisabled
+										}
 										isOwnTopic={isOwnTopic}
 										joiningTopicId={joiningTopicId}
 										onEdit={isOwnTopic ? handleEdit : undefined}
