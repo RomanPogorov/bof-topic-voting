@@ -7,9 +7,48 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ErrorMessage } from "@/components/shared/error-message";
 import { BOFCard } from "@/components/mobile/bof-card";
+import { PanelDiscussionCard } from "@/components/mobile/panel-discussion-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils/formatters";
 import Image from "next/image";
+
+// Panel Discussion data by day
+const panelDiscussions = {
+	1: {
+		title: "FHIR R6 and beyond – what to expect",
+		time: "01:00 PM",
+		participants: [
+			"Ryzhikov Nikolai",
+			"Gino Canessa",
+			"Lloyd McKenzie",
+			"Grahame Grieve",
+			"Diego Kaminker",
+		],
+	},
+	2: {
+		title: "Implementation Guides – how to make them clear and easy to use",
+		time: "01:00 PM",
+		participants: [
+			"Lloyd McKenzie",
+			"Jens Villadsen",
+			"Oliver Egger",
+			"Grahame Grieve",
+			"Diego Kaminker",
+			"Jose Costa Teixeira",
+		],
+	},
+	3: {
+		title: "AI on FHIR",
+		time: "01:00 PM",
+		participants: [
+			"Ewout Kramer",
+			"Aleksandr Kislitsyn",
+			"Grahame Grieve",
+			"Lloyd McKenzie",
+			"Gino Canessa",
+		],
+	},
+};
 
 export default function HomePage() {
 	const { participant, isLoading: authLoading } = useAuth();
@@ -103,11 +142,29 @@ export default function HomePage() {
 						</div>
 
 						<div className="flex flex-col gap-8">
-							{dateSessions.map((session) => (
-								<div key={session.id}>
-									<BOFCard session={session} />
-								</div>
-							))}
+							{dateSessions.map((session) => {
+								const panelData =
+									panelDiscussions[
+										session.day_number as keyof typeof panelDiscussions
+									];
+								const showPanelAfter =
+									session.session_number === 1 && panelData;
+
+								return (
+									<div key={session.id}>
+										<BOFCard session={session} />
+										{showPanelAfter && (
+											<div className="mt-8">
+												<PanelDiscussionCard
+													title={panelData.title}
+													time={panelData.time}
+													participants={panelData.participants}
+												/>
+											</div>
+										)}
+									</div>
+								);
+							})}
 						</div>
 					</div>
 				))}

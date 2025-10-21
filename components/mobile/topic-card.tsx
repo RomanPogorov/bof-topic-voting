@@ -265,9 +265,7 @@ export function TopicCard({
 									<span
 										className={`font-medium text-[14px] leading-[20px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
 									>
-										{isLeading
-											? "You can't join others while leading"
-											: "Join"}
+										{isLeading ? "You can't join others while leading" : "Join"}
 									</span>
 								</>
 							)}
