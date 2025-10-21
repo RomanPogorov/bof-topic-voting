@@ -52,6 +52,12 @@ export default function BOFPage({ params }: BOFPageProps) {
 			return;
 		}
 
+		// Check if joining is disabled for this session (Lightning Talks)
+		if (isJoiningDisabled) {
+			toast.error("Lightning Talks: you can only lead your own topic");
+			return;
+		}
+
 		// Check if user has created a topic in this session
 		if (hasCreatedTopic) {
 			toast.error("You are leading your own topic and cannot join others");
@@ -140,6 +146,7 @@ export default function BOFPage({ params }: BOFPageProps) {
 	const canCreateTopic = participant;
 	const hasCreatedTopic = topics.some((t) => t.author_id === participant?.id);
 	const isAdmin = participant?.role === "admin";
+	const isJoiningDisabled = !bof.allow_joining; // Lightning Talks sessions disable joining
 
 	return (
 		<div className="bg-[#e7e7e9] flex flex-col items-start min-h-screen">
@@ -236,13 +243,14 @@ export default function BOFPage({ params }: BOFPageProps) {
 										isJoined={userVote?.topic_id === topic.topic_id}
 										onJoin={handleJoin}
 										isJoining={isJoining}
-										disabled={!participant || hasCreatedTopic}
+										disabled={!participant || hasCreatedTopic || isJoiningDisabled}
 										isOwnTopic={isOwnTopic}
 										joiningTopicId={joiningTopicId}
 										onEdit={isOwnTopic ? handleEdit : undefined}
 										onDelete={isOwnTopic ? handleDelete : undefined}
 										currentUserId={participant?.id}
 										isLeading={hasCreatedTopic}
+										isLightningTalks={isJoiningDisabled}
 									/>
 								);
 							})}

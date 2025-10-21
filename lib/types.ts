@@ -36,6 +36,7 @@ export interface BOFSession {
   voting_opens_at?: string;
   voting_closes_at?: string;
   status: BOFStatus;
+  allow_joining: boolean; // If false, users can only lead topics, not join others
   created_at: string;
   updated_at: string;
 }

@@ -16,6 +16,7 @@ interface TopicCardProps {
 	onDelete?: (topicId: string) => void;
 	currentUserId?: string;
 	isLeading?: boolean;
+	isLightningTalks?: boolean;
 }
 
 export function TopicCard({
@@ -29,6 +30,7 @@ export function TopicCard({
 	onDelete,
 	currentUserId,
 	isLeading,
+	isLightningTalks,
 }: TopicCardProps) {
 	const isThisTopicJoining = joiningTopicId === topic.topic_id;
 
@@ -262,7 +264,11 @@ export function TopicCard({
 								<span
 									className={`font-medium text-[14px] leading-[20px] ${disabled ? "text-[#9c9ca2]" : "text-white"}`}
 								>
-									{isLeading ? "You can't join others while leading" : "Join"}
+									{isLightningTalks
+										? "Lead your own topic"
+										: isLeading
+											? "You can't join others while leading"
+											: "Join"}
 								</span>
 							</>
 						)}
