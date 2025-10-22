@@ -10,15 +10,10 @@ import { Plus, RefreshCw } from "lucide-react";
 import { CreateTopicSheet } from "@/components/mobile/create-topic-sheet";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { toast } from "sonner";
-import type { TopicDetails } from "@/lib/types";
+import type { TopicDetails, BOFSession } from "@/lib/types";
 import { AdminTopicList } from "@/components/admin/admin-topic-list";
 
-interface BOFSessionRow {
-	id: string;
-	day_number: number;
-	session_number: number;
-	title: string;
-	description?: string;
+interface BOFSessionRow extends BOFSession {
 	topics: TopicDetails[];
 }
 
@@ -30,7 +25,7 @@ export default function AdminBOFSessionsPage() {
 		// Fetch sessions first
 		const { data: sessionsData } = await supabase
 			.from("bof_sessions")
-			.select("id, day_number, session_number, title, description")
+			.select("*")
 			.order("day_number", { ascending: true })
 			.order("session_time", { ascending: true });
 
@@ -108,7 +103,13 @@ export default function AdminBOFSessionsPage() {
 								</div>
 							)}
 
-							<AdminTopicList topics={s.topics || []} onTopicDeleted={load} />
+							<AdminTopicList
+								topics={s.topics || []}
+								sessions={sessions}
+								currentSessionId={s.id}
+								onTopicDeleted={load}
+								onTopicMoved={load}
+							/>
 
 							{/* Admin can create topic into any session */}
 							{participant && participant.role === "admin" && (

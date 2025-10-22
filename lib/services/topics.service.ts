@@ -146,4 +146,36 @@ export class TopicsService {
 
     if (error) throw new Error(ErrorCodes.SERVER_ERROR);
   }
+
+  /**
+   * Move topic to another BOF session (admin)
+   */
+  static async moveTopicToSession(
+    topicId: string,
+    targetSessionId: string
+  ): Promise<void> {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Session expired. Please scan your QR code again");
+    }
+
+    const resp = await fetch(`/api/admin/topics/${topicId}/move`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ targetSessionId }),
+    });
+
+    if (!resp.ok) {
+      const { error } = await resp.json();
+
+      if (resp.status === 401 || resp.status === 403) {
+        throw new Error("Session expired. Please scan your QR code again");
+      }
+
+      throw new Error(error || "Failed to move topic");
+    }
+  }
 }

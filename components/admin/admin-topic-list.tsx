@@ -1,8 +1,8 @@
 "use client";
 
-import type { TopicDetails } from "@/lib/types";
+import type { TopicDetails, BOFSession } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, ThumbsUp } from "lucide-react";
+import { Trash2, Loader2, ThumbsUp, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -16,18 +16,34 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { TopicsService } from "@/lib/services/topics.service";
 
 interface AdminTopicListProps {
 	topics: TopicDetails[];
+	sessions: BOFSession[];
+	currentSessionId: string;
 	onTopicDeleted: () => void;
+	onTopicMoved: () => void;
 }
 
 export function AdminTopicList({
 	topics,
+	sessions,
+	currentSessionId,
 	onTopicDeleted,
+	onTopicMoved,
 }: AdminTopicListProps) {
 	const [isDeleting, setIsDeleting] = useState<string | null>(null);
+	const [isMoving, setIsMoving] = useState<string | null>(null);
+	const [moveDialogOpen, setMoveDialogOpen] = useState<string | null>(null);
 
 	const handleDelete = async (topicId: string) => {
 		setIsDeleting(topicId);
@@ -42,6 +58,23 @@ export function AdminTopicList({
 			setIsDeleting(null);
 		}
 	};
+
+	const handleMove = async (topicId: string, targetSessionId: string) => {
+		setIsMoving(topicId);
+		try {
+			await TopicsService.moveTopicToSession(topicId, targetSessionId);
+			toast.success("Topic moved successfully");
+			setMoveDialogOpen(null);
+			onTopicMoved();
+		} catch (error) {
+			toast.error("Failed to move topic");
+			console.error("Move error:", error);
+		} finally {
+			setIsMoving(null);
+		}
+	};
+
+	const availableSessions = sessions.filter((s) => s.id !== currentSessionId);
 
 	if (topics.length === 0) {
 		return null;
@@ -71,40 +104,103 @@ export function AdminTopicList({
 							</div>
 						</div>
 
-						<AlertDialog>
-							<AlertDialogTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 shrink-0"
-									disabled={!!isDeleting}
-								>
-									<Trash2 className="h-4 w-4" />
-								</Button>
-							</AlertDialogTrigger>
-							<AlertDialogContent>
-								<AlertDialogHeader>
-									<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-									<AlertDialogDescription>
-										This action cannot be undone. This will permanently delete
-										the topic and all of its associated votes.
-									</AlertDialogDescription>
-								</AlertDialogHeader>
-								<AlertDialogFooter>
-									<AlertDialogCancel>Cancel</AlertDialogCancel>
-									<AlertDialogAction
-										onClick={() => handleDelete(topic.topic_id)}
-										className="bg-destructive hover:bg-destructive/90"
+						<div className="flex items-center gap-1 shrink-0">
+							{/* Move Topic Dialog */}
+							<Dialog
+								open={moveDialogOpen === topic.topic_id}
+								onOpenChange={(open) =>
+									setMoveDialogOpen(open ? topic.topic_id : null)
+								}
+							>
+								<DialogTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 w-8"
+										disabled={!!isMoving || !!isDeleting}
 									>
-										{isDeleting === topic.topic_id ? (
-											<Loader2 className="h-4 w-4 animate-spin" />
+										<ArrowRight className="h-4 w-4" />
+									</Button>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>Move Topic to Another Session</DialogTitle>
+										<DialogDescription>
+											Select the target BOF session for &quot;{topic.title}
+											&quot;
+										</DialogDescription>
+									</DialogHeader>
+									<div className="space-y-2 py-4">
+										{availableSessions.length === 0 ? (
+											<p className="text-sm text-gray-500">
+												No other sessions available
+											</p>
 										) : (
-											"Delete"
+											availableSessions.map((session) => (
+												<Button
+													key={session.id}
+													variant="outline"
+													className="w-full justify-start"
+													onClick={() => handleMove(topic.topic_id, session.id)}
+													disabled={isMoving === topic.topic_id}
+												>
+													{isMoving === topic.topic_id ? (
+														<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+													) : (
+														<ArrowRight className="h-4 w-4 mr-2" />
+													)}
+													<div className="text-left">
+														<div className="font-medium">
+															Day {session.day_number} · Session{" "}
+															{session.session_number}
+														</div>
+														<div className="text-xs text-gray-500">
+															{session.title}
+														</div>
+													</div>
+												</Button>
+											))
 										)}
-									</AlertDialogAction>
-								</AlertDialogFooter>
-							</AlertDialogContent>
-						</AlertDialog>
+									</div>
+								</DialogContent>
+							</Dialog>
+
+							{/* Delete Topic Dialog */}
+							<AlertDialog>
+								<AlertDialogTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+										disabled={!!isDeleting || !!isMoving}
+									>
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								</AlertDialogTrigger>
+								<AlertDialogContent>
+									<AlertDialogHeader>
+										<AlertDialogTitle>Are you sure?</AlertDialogTitle>
+										<AlertDialogDescription>
+											This action cannot be undone. This will permanently delete
+											the topic and all of its associated votes.
+										</AlertDialogDescription>
+									</AlertDialogHeader>
+									<AlertDialogFooter>
+										<AlertDialogCancel>Cancel</AlertDialogCancel>
+										<AlertDialogAction
+											onClick={() => handleDelete(topic.topic_id)}
+											className="bg-destructive hover:bg-destructive/90"
+										>
+											{isDeleting === topic.topic_id ? (
+												<Loader2 className="h-4 w-4 animate-spin" />
+											) : (
+												"Delete"
+											)}
+										</AlertDialogAction>
+									</AlertDialogFooter>
+								</AlertDialogContent>
+							</AlertDialog>
+						</div>
 					</div>
 				))}
 			</div>
